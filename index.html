@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rizka</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <meta name="view-transition" content="same-origin">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --border: #d5d3cf;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 680px; 
+            margin: 0 auto; 
+            padding: 6rem 2rem 8rem; 
+        }
+
+        header {
+            max-width: 680px;
+            margin: 0 auto 4rem auto;
+        }
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 400;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+        .tagline { font-style: italic; color: var(--text-muted); font-size: 1rem; }
+
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        nav a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+        nav a:hover { color: var(--accent); }
+        nav a.active { color: var(--accent); }
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 3rem 0 1.25rem;
+        }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        p { margin-bottom: 1.25rem; color: var(--text-secondary); }
+
+        .status {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--accent);
+            padding: 1rem 1.25rem;
+            margin: 2rem 0;
+            border-radius: 0 3px 3px 0;
+        }
+        .status-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+        .status-content { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .writing-list { list-style: none; margin-top: 1rem; }
+        .writing-item { border-bottom: 1px solid var(--border); padding: 1.25rem 0; }
+        .writing-item:first-child { border-top: 1px solid var(--border); }
+        .writing-item a { text-decoration: none; display: block; }
+        .writing-title {
+            font-family: 'Newsreader', serif;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+            transition: color 0.2s ease;
+        }
+        .writing-item a:hover .writing-title { color: var(--accent); }
+        .writing-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+        .writing-desc { color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.5; }
+
+        .elsewhere { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+        .elsewhere a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        .elsewhere a:hover { border-color: var(--accent); color: var(--accent); }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .container { padding: 3rem 1.25rem 4rem; }
+            h1 { font-size: 1.8rem; }
+            nav { gap: 1rem; }
+        }
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Rizka Azmira</h1>
+            <p class="tagline">ml/ds · causal inference · making illegible things legible</p>
+            <nav>
+                <a href="index.html" class="active">home</a>
+                <a href="about.html">about</a>
+                <a href="art.html">art</a>
+            </nav>
+        </header>
+
+        <div class="status">
+            <div class="status-label">currently</div>
+            <div class="status-content">building experimentation platform. thinking about metacognition and the phenomenology of systems.</div>
+        </div>
+
+        <h2>Writing</h2>
+
+        <ul class="writing-list">
+            <li class="writing-item">
+                <a href="writings/your_model_isnt_telling.html">
+                    <div class="writing-title">Your model isn't telling you everything</div>
+                    <div class="writing-meta">dec 2025 · model evaluation</div>
+                    <div class="writing-desc">on developing feel for what your classifier is actually doing. a socratic dialogue on probability distributions as diagnostic tools.</div>
+                </a>
+            </li>
+
+        </ul>
+
+        <h2>Elsewhere</h2>
+
+        <div class="elsewhere">
+            <a href="https://twitter.com/azmirarizka">twitter</a>
+            <a href="https://id.linkedin.com/in/rizka-azmira">linkedin</a>
+        </div>
+        <footer>
+            <p>built with claude-kun</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — Rizka</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <meta name="view-transition" content="same-origin">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --border: #d5d3cf;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 680px; 
+            margin: 0 auto; 
+            padding: 6rem 2rem 8rem; 
+        }
+
+        header {
+            max-width: 680px;
+            margin: 0 auto 4rem auto;
+        }
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 400;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+        .tagline { font-style: italic; color: var(--text-muted); font-size: 1rem; }
+
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        nav a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+        nav a:hover { color: var(--accent); }
+        nav a.active { color: var(--accent); }
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 3rem 0 1.25rem;
+        }
+        h2:first-of-type { margin-top: 0; }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        p { margin-bottom: 1.25rem; color: var(--text-secondary); }
+        p:last-child { margin-bottom: 0; }
+        strong { color: var(--text-primary); font-weight: 500; }
+        a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s ease; }
+        a:hover { border-bottom-color: var(--accent); }
+
+        ul { list-style: none; margin: 1rem 0; }
+        ul li { color: var(--text-secondary); padding-left: 1rem; position: relative; margin-bottom: 0.5rem; }
+        ul li::before { content: '—'; position: absolute; left: 0; color: var(--text-muted); }
+
+        .belief {
+            background: var(--bg-tertiary);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .belief p { font-style: italic; color: var(--text-primary); margin-bottom: 0; }
+
+        .interests-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .interest-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem 1.25rem;
+        }
+        .interest-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+        .interest-content { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
+
+        .timeline { margin-top: 1rem; border-left: 1px solid var(--border); padding-left: 1.5rem; }
+        .timeline-item { position: relative; padding-bottom: 1.5rem; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.5rem;
+            width: 7px;
+            height: 7px;
+            background: var(--bg-primary);
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            transform: translateX(-3px);
+        }
+        .timeline-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .timeline-content { color: var(--text-secondary); font-size: 0.95rem; }
+        .timeline-content strong { color: var(--text-primary); }
+
+        .colophon {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.25rem 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .colophon-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+        .colophon-list {
+            list-style: none;
+            margin: 0;
+        }
+
+        .colophon-list li {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            padding-left: 0;
+            margin-bottom: 0.35rem;
+        }
+
+        .colophon-list li::before {
+            display: none;
+        }
+
+        .colophon-list li span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            margin-right: 0.5rem;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .container { padding: 3rem 1.25rem 4rem; }
+            h1 { font-size: 1.8rem; }
+            nav { gap: 1rem; }
+            .interests-grid { grid-template-columns: 1fr; }
+        }
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Rizka Azmira</h1>
+            <p class="tagline">ml/ds · causal inference · making illegible things legible</p>
+            <nav>
+                <a href="index.html">home</a>
+                <a href="about.html" class="active">about</a>
+                <a href="art.html">art</a>
+            </nav>
+        </header>
+
+        <h2>about</h2>
+
+        <p>I'm a data scientist currently building experimentation platform at an Indonesian tech company. My work involves statistical frameworks, methodology, and A/B testing pipelines — the kind of infrastructure that makes it possible to know whether anything you shipped actually worked.</p>
+
+        <p>I have a weird obsession with symbols and metaphors. Most of my time is spent trying to compress things to <a href="https://www.ribbonfarm.com/2013/04/10/a-beginners-guide-to-immortality/">shapes I can hold in my head</a>.</p>
+
+        <div class="belief">
+            <p>I believe that understanding comes from making patterns visible that were previously hidden. The best discoveries don't just work — they make previously illegible things legible.</p>
+        </div>
+
+        <h2>things i think about</h2>
+
+        <div class="interests-grid">
+            <div class="interest-card">
+                <div class="interest-label">technical</div>
+                <div class="interest-content">statistical metacognition, why and how things fail in interesting ways, decoupled systems, explicit boundaries over implicit coupling</div>
+            </div>
+            <div class="interest-card">
+                <div class="interest-label">aesthetic</div>
+                <div class="interest-content">concept art, character design, systematization, the intersection of systematic and creative</div>
+            </div>
+            <div class="interest-card">
+                <div class="interest-label">philosophical</div>
+                <div class="interest-content">frameworks for understanding, meta-cognition, numerology and pattern languages, making the implicit explicit</div>
+            </div>
+            <div class="interest-card">
+                <div class="interest-label">observational</div>
+                <div class="interest-content">trying out little phrases on my own, producing complexity far greater than is needed for recognition</div>
+            </div>
+        </div>
+
+
+        <h2>working with me</h2>
+
+        <p>I value direct communication and intellectual honesty. I prefer explicit boundaries over implicit coupling - in systems and in collaboration. I'm probably going to ask "but what does this MEAN.." more times than you're comfortable with.</p>
+
+        <h2>this site</h2>
+
+        <div class="colophon">
+            <div class="colophon-title">colophon</div>
+            <ul class="colophon-list">
+                <li><span>built with</span> plain html/css and claude-kun's 血、汗、涙</li>
+                <li><span>typography</span> jetbrains mono + newsreader</li>
+                <li><span>aesthetic</span> 無し</li>
+            </ul>
+        </div>
+</body>
+</html>

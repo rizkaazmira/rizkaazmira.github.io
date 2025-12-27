@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art — Rizka</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <meta name="view-transition" content="same-origin">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --border: #d5d3cf;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 6rem 2rem 8rem; 
+        }
+
+        header {
+            max-width: 680px;
+            margin: 0 auto 4rem auto;
+        }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 400;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+        .tagline { font-style: italic; color: var(--text-muted); font-size: 1rem; }
+
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        nav a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+        nav a:hover { color: var(--accent); }
+        nav a.active { color: var(--accent); }
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 3rem 0 1.25rem;
+        }
+        h2:first-of-type { margin-top: 0; }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        p { margin-bottom: 1.25rem; color: var(--text-secondary); }
+
+        /* series section */
+        .series {
+            margin-bottom: 4rem;
+        }
+
+        .series-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .series-title {
+            font-family: 'Newsreader', serif;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+
+        .series-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+
+        .series-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            max-width: 600px;
+        }
+
+        /* image grid */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            border-color: var(--accent);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item.placeholder {
+            cursor: default;
+        }
+
+        .gallery-item.placeholder:hover {
+            border-color: var(--border);
+        }
+
+        .placeholder-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* featured/larger item */
+        .gallery-item.featured {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        /* wip badge */
+        .wip-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 2px;
+            margin-left: 0.75rem;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .container { padding: 3rem 1.25rem 4rem; }
+            h1 { font-size: 1.8rem; }
+            nav { gap: 1rem; }
+            .gallery { grid-template-columns: repeat(2, 1fr); }
+            .gallery-item.featured {
+                grid-column: span 2;
+                grid-row: span 1;
+                aspect-ratio: 2/1;
+            }
+            .series-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+        }
+
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Rizka Azmira</h1>
+            <p class="tagline">character designs · concept art · catbird experiments</p>
+            <nav>
+                <a href="index.html">home</a>
+                <a href="about.html">about</a>
+                <a href="art.html" class="active">art</a>
+            </nav>
+        </header>
+
+        <h2>series</h2>
+        <div class="series">
+            <div class="series-header">
+                <div class="series-title">万马奔腾 <span class="wip-badge">wip</span></div>
+                <div class="series-meta">1 / ? pieces</div>
+            </div>
+            <p class="series-desc">first the shedding, then the gallop. small creatures processing the shift from still to fast.</p>
+            <div class="gallery">
+                <div class="gallery-item"><img src="images/series2-1.jpg" alt="santa galloping into 2026"></div>
+                <div class="gallery-item placeholder"><span class="placeholder-text">soon</span></div>
+                <div class="gallery-item placeholder"><span class="placeholder-text">soon</span></div>
+            </div>
+        </div>
+
+        <div class="series">
+            <div class="series-header">
+                <div class="series-title">my year of rest and relaxation </div>
+                <div class="series-meta">3 / 7 pieces</div>
+            </div>
+            <p class="series-desc">tiger year -> rabbit year. introspective creatures in liminal spaces, scored by pop references or local peribahasa only 2 people will get.</p>
+            <div class="gallery">
+                <div class="gallery-item"><img src="images/series1-1.jpg" alt="butterfly stuck inside a plane"></div>
+                <div class="gallery-item"><img src="images/series1-2.jpg" alt="where is the shepherd for this lost lamb"></div>
+                <div class="gallery-item"><img src="images/series1-3.jpg" alt="the experience of bein' an a&w"></div>
+            </div>
+        </div>
+        
+        
+        <div class="series">
+            <div class="series-header">
+                <div class="series-title">poclu inse <span class="wip-badge">wip</span></div>
+                <div class="series-meta">3 / ∞ pieces</div>
+            </div>
+            <p class="series-desc">kingkong (also known as poclu/donghee/kucpen) the black cat tries various careers and vibes. fails at all of them. insecure but persistent. (family group whatsapp sticker collection).</p>
+            <div class="gallery">
+                <div class="gallery-item"><img src="images/series0-1.png" alt="poclu as clown"></div>
+                <div class="gallery-item"><img src="images/series0-2.png" alt="losercore poclu"></div>
+                <div class="gallery-item"><img src="images/series0-3.jpg" alt="poclu tries. poclu fails. poclu tries again."></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>art as catbird song — trying out shapes to see what resonates</p>
+        </footer>
+    </div>
+</body>
+</html>
