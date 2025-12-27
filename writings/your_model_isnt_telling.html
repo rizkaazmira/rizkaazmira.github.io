@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your model isn't telling you everything</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-dim: #a67c52;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --danger: #9b4444;
+            --success: #4a7c4a;
+            --code-bg: #eae8e4;
+            --border: #d5d3cf;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 4rem 2rem 8rem;
+        }
+
+        /* header */
+        header {
+            margin-bottom: 2rem;
+            padding-bottom: 0rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            font-family: 'Newsreader', serif;
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* prose */
+        p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        strong, b {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        em {
+            font-style: italic;
+            color: var(--text-primary);
+        }
+
+        /* section headers */
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: lowercase;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin: 4rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h2::before {
+            content: '/// ';
+            color: var(--text-muted);
+        }
+
+        /* dialogue */
+        .dialogue {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--border);
+            padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .dialogue-line {
+            margin-bottom: 1.25rem;
+            padding-left: 0;
+        }
+
+        .dialogue-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .speaker {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: lowercase;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.05em;
+        }
+
+        .speaker.mentor {
+            color: var(--accent);
+        }
+
+        .speaker.amit {
+            color: var(--text-muted);
+        }
+
+        .dialogue-content {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .dialogue-content em {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .stage-direction {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+            padding-left: 1rem;
+            border-left: 1px solid var(--border);
+        }
+
+        /* the oh-no moment */
+        .oh-no {
+            color: var(--danger);
+            font-weight: 500;
+        }
+
+        .realization {
+            background: rgba(155, 68, 68, 0.08);
+            padding: 0.25rem 0.5rem;
+            margin-left: -0.5rem;
+            border-radius: 2px;
+        }
+        /*  misc. styling */
+        .rainbow {
+            background: linear-gradient(90deg, #e07a5f, #d4a574, #81b29a, #7eb0c2, #9a8fc2);
+            font-weight: bold;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-style: italic;
+        }
+
+        .weeb {
+            font-style: italic;
+        }
+        
+        .weeb::after {
+            content: ' (' attr(data-tl) ')';
+            color: var(--text-muted);
+            font-style: normal;
+            font-size: 0.85em;
+        }
+
+        /* interactive quiz */
+        .interactive {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2rem;
+            margin: 3rem 0;
+            position: relative;
+        }
+
+        .interactive::before {
+            content: 'interactive';
+            position: absolute;
+            top: -0.6rem;
+            left: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            background: var(--bg-tertiary);
+            padding: 0 0.5rem;
+        }
+
+        .interactive-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            text-transform: lowercase;
+        }
+
+        .interactive-prompt {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* histogram display */
+        .histogram-container {
+            background: var(--code-bg);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .histogram {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 120px;
+            gap: 3px;
+        }
+
+        .histogram-bar {
+            flex: 1;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            min-width: 0;
+            transition: background 0.2s ease;
+        }
+
+        .histogram-bar:hover {
+            background: var(--text-primary);
+        }
+
+        .histogram-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+
+        .histogram-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        /* histogram grid for side by side */
+        .histogram-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .histogram-cell {
+            min-width: 0;
+        }
+
+        .histogram-cell .histogram {
+            height: 80px;
+        }
+
+        .histogram-cell-label {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* quiz options */
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-option {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: rgba(74, 124, 74, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--danger);
+            background: rgba(155, 68, 68, 0.08);
+            opacity: 0.6;
+        }
+
+        /* reveal button */
+        .reveal-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.625rem 1.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reveal-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .reveal-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* answer reveal */
+        .answer-reveal {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .answer-reveal.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .answer-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .answer-content {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* details/summary for simpler reveals */
+        details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        summary {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            list-style: none;
+            transition: color 0.2s ease;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: '+ ';
+            color: var(--accent);
+        }
+
+        details[open] summary::before {
+            content: '− ';
+        }
+
+        summary:hover {
+            color: var(--text-primary);
+        }
+
+        details > div {
+            padding: 0 1.25rem 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            margin-top: 0;
+            padding-top: 1rem;
+        }
+
+        /* callout */
+        .callout {
+            background: var(--accent-glow);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        /* code */
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: var(--code-bg);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+
+        /* horizontal rule */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 3rem 0;
+        }
+
+        /* links */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        /* footer */
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        /* mobile */
+        @media (max-width: 600px) {
+            html {
+                font-size: 16px;
+            }
+
+            .container {
+                padding: 2rem 1.25rem 4rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .interactive {
+                padding: 1.5rem;
+            }
+
+            .histogram {
+                height: 100px;
+                gap: 2px;
+            }
+
+            .histogram-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .histogram-cell .histogram {
+                height: 70px;
+            }
+
+            .quiz-option {
+                font-size: 0.75rem;
+                padding: 0.75rem;
+            }
+        }
+
+        /* selection */
+        ::selection {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Your model isn't telling you everything</h1>
+            <p class="">On developing feel for what your classifier is actually doing</p>
+        </header>
+
+        
+        <p>There's this thing that happens in ML or <span class="rainbow">data science</span> where people train a model, see good metrics, and ship. Then, six months later someone discovers it was predicting the past or exploiting a data leak or failing silently on the customer segment that actually matters.</p>        <p>The problem isn't technical. It's <i>phenomenological</i>. Most practitioners never develop a <a href="https://en.wikipedia.org/wiki/Fingerspitzengef%C3%BChl">finger tips feeling</a> for what their models are doing internally. They treat evaluation as a checkbox rather than an investigation. They treat their model as a well-meaning oracle instead of a witness who's only answering exactly what you asked in the terms <em>you</em> dictated.</em></p>
+        <p>I'm going to walk through what it looks like to develop this feel, via a fictionalized mentorship dialogue. The mentor is an amalgamation of people who taught me this stuff. The junior DS is named Amit because I needed a body.</p>
+        <div class="callout">
+            <p>No "Amit"s were harmed during the writing of this post.</p>
+        </div>
+        <hr>
+
+        <h2>Week 1: The Suspicious Bimodal</h2>
+
+        <p>Amit has trained a churn model. GBM, tabular, binary classification. Bread and butter.</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">Accuracy is 84%, AUC is 0.91. <span class="weeb" data-tl="Can I ship it, mentor?">Ririisu shite ii desu ka?</span></div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content"><span class="weeb" data-tl="cool">Sou ka</span>. Show me the probability histogram.</div>
+            </div>
+        </div>
+
+        <p class="stage-direction">Amit pulls it up. It's a bimodal histogram which peaks at 0.1 and 0.9; with almost nothing in the middle</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">What does this shape tell you</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">The model is confident?<span class="weeb" data-tl="I'm not.."></span></div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Confident about WHAT though. Look at the middle. What's NOT there</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">There's almost nothing between 0.3 and 0.7...</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Right. The model thinks almost every customer is clearly gonna churn or clearly gonna stay. Does that match your intuition about churn as a phenomenon?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content"><em>pause</em> ...I mean there should probably be some ambiguous cases?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Yeah. So either your features are SO good that churn is basically deterministic given what you know, or something weird is happening. Which seems more likely?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">Probably something weird.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Ok. Pull 20 random samples from the 0.85-0.95 confidence bin. Not the predictions. The actual raw data. Look at them.</div>
+            </div>
+        </div>
+
+        <p class="stage-direction">Amit does this, comes back 15 minutes later</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">A lot of these have zero activity in the last 30 days...</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">And what's the churn definition?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">No activity for 60 days.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content"><em>waits</em></div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content realization"><span class="oh-no">Oh. Oh no.</span></div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content"><span class="weeb" data-tl="Sampai sini paham?">Wakatteru?</span></div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">We're leaking the target.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">You're predicting the PAST not the FUTURE. The model learned "no activity recently = no activity soon" which is technically true but <b>operationally useless</b>. You can't intervene on someone who's already gone.</div>
+            </div>
+        </div>
+
+        <div class="callout">
+            <p>When the model is TOO confident, especially on a stochastic problem like churn, your first instinct should be suspicion not celebration. Real churn prediction should have more mass in the middle because humans are ambiguous creatures who do unpredictable things.</p>
+        </div>
+
+        <!-- INTERACTIVE 1 -->
+        <div class="interactive" id="quiz1">
+            <div class="interactive-title">your turn: identify the pathology</div>
+            <p class="interactive-prompt">You're evaluating a fraud detection model. Here's the probability distribution:</p>
+            
+            <div class="histogram-container">
+                <div class="histogram" id="histogram1">
+                    <div class="histogram-bar" style="height: 95%"></div>
+                    <div class="histogram-bar" style="height: 8%"></div>
+                    <div class="histogram-bar" style="height: 3%"></div>
+                    <div class="histogram-bar" style="height: 2%"></div>
+                    <div class="histogram-bar" style="height: 1%"></div>
+                    <div class="histogram-bar" style="height: 1%"></div>
+                    <div class="histogram-bar" style="height: 2%"></div>
+                    <div class="histogram-bar" style="height: 5%"></div>
+                    <div class="histogram-bar" style="height: 12%"></div>
+                    <div class="histogram-bar" style="height: 88%"></div>
+                </div>
+                <div class="histogram-labels">
+                    <span class="histogram-label">0.0</span>
+                    <span class="histogram-label">0.5</span>
+                    <span class="histogram-label">1.0</span>
+                </div>
+            </div>
+
+            <p class="interactive-prompt">The model has 97% accuracy. What should you suspect?</p>
+
+            <div class="quiz-options" id="quiz1-options">
+                <button class="quiz-option" data-answer="a">a) Nothing. I'm a skillful <span class="rainbow">data scientist</span> who's going to slay the performance review</button>
+                <button class="quiz-option" data-answer="b">b) Class imbalance is causing the model to predict majority class</button>
+                <button class="quiz-option" data-answer="c">c) Possible target leakage - model is too confident for a stochastic problem</button>
+                <button class="quiz-option" data-answer="d">d) Features are uninformative, model is guessing</button>
+            </div>
+
+            <button class="reveal-btn" id="reveal1">show answer</button>
+
+            <div class="answer-reveal" id="answer1">
+                <div class="answer-label">diagnosis</div>
+                <div class="answer-content">
+                    <p><strong>c) Possible target leakage</strong> - the bimodal shape with almost nothing in the middle is suspicious. Fraud, like churn, should have ambiguous cases. When a model is this confident on a problem involving human behavior, check for features that encode the outcome. Common culprits: transaction status fields, timestamps that reveal post-hoc information, derived features that were computed after the fraud was discovered.</p>
+                    <p style="margin-top: 1rem; margin-bottom: 0;"><em>b) is possible but would show a different pattern - heavy skew toward one class, not bimodal peaks at both ends.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <h2>Week 2: The Uniform Wasteland</h2>
+
+        <p>Different model, same Amit.</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Show me the histogram.</div>
+            </div>
+        </div>
+
+        <p class="stage-direction">It's uniform, almost flat across the whole probability range</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">What does THIS tell you?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">The model isn't learning anything?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Maybe. Or maybe the problem is hard. How do you tell the difference?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content"><em>thinks</em> Compare to a baseline?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Which baseline?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">Random?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Random would also be uniform. Try again.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">Majority class predictor?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Closer. What about: predict the base rate for everyone. What would THAT histogram look like?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">It would be a spike at whatever the base rate is. Like 0.3 if 30% churn.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Right. So your model IS doing something - it's spreading out from the prior. But it's not finding DECISIVE signal. Now the question is: is that because the signal isn't in your features, or because the model can't extract it?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">...how do i tell?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Train a logreg on the same features. Compare histograms.</div>
+            </div>
+        </div>
+
+        <p class="stage-direction">Amit does it. Logreg is ALSO uniform</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Ok so it's not a model capacity issue. The features themselves are weak. GBM can't squeeze blood from stones. Now you have a decision: get better features or accept that churn is partially irreducible given what you can observe.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">What if the logreg was more peaked?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Then GBM would've been UNDERFITTING somehow, which is rare but possible if you have weird hyperparams. The point is: use simple models as a diagnostic tool, not just as a baseline to beat. Logreg is a probe into your feature space informativeness.</div>
+            </div>
+        </div>
+
+        <!-- INTERACTIVE 2 -->
+        <div class="interactive" id="quiz2">
+            <div class="interactive-title">distribution shape diagnostics</div>
+            <p class="interactive-prompt">Match each histogram shape to its most likely interpretation:</p>
+
+            <div class="histogram-container">
+                <div class="histogram-grid">
+                    <div class="histogram-cell">
+                        <div class="histogram">
+                            <div class="histogram-bar" style="height: 12%"></div>
+                            <div class="histogram-bar" style="height: 11%"></div>
+                            <div class="histogram-bar" style="height: 10%"></div>
+                            <div class="histogram-bar" style="height: 9%"></div>
+                            <div class="histogram-bar" style="height: 11%"></div>
+                            <div class="histogram-bar" style="height: 10%"></div>
+                            <div class="histogram-bar" style="height: 12%"></div>
+                            <div class="histogram-bar" style="height: 9%"></div>
+                            <div class="histogram-bar" style="height: 11%"></div>
+                            <div class="histogram-bar" style="height: 10%"></div>
+                        </div>
+                        <div class="histogram-cell-label">Shape A: Uniform</div>
+                    </div>
+                    <div class="histogram-cell">
+                        <div class="histogram">
+                            <div class="histogram-bar" style="height: 5%"></div>
+                            <div class="histogram-bar" style="height: 8%"></div>
+                            <div class="histogram-bar" style="height: 25%"></div>
+                            <div class="histogram-bar" style="height: 65%"></div>
+                            <div class="histogram-bar" style="height: 95%"></div>
+                            <div class="histogram-bar" style="height: 70%"></div>
+                            <div class="histogram-bar" style="height: 28%"></div>
+                            <div class="histogram-bar" style="height: 10%"></div>
+                            <div class="histogram-bar" style="height: 6%"></div>
+                            <div class="histogram-bar" style="height: 3%"></div>
+                        </div>
+                        <div class="histogram-cell-label">Shape B: Peaked at 0.5</div>
+                    </div>
+                </div>
+            </div>
+
+            <details>
+                <summary>What does Shape A (uniform) typically indicate?</summary>
+                <div>Features are uninformative for the prediction task. The model has learned to spread out from the prior but can't find decisive signal. Either the problem is genuinely hard given available information, or you need better features. Compare against logreg to distinguish model capacity issues from feature quality issues.</div>
+            </details>
+
+            <details>
+                <summary>What does Shape B (peaked at 0.5) typically indicate?</summary>
+                <div>The model has learned SOMETHING but is constantly hedging. Common causes: high label noise (model can't commit because labels are inconsistent), missing key features (there's signal but not enough to be decisive), genuine class overlap in feature space, or the problem has high irreducible uncertainty. Investigate by sampling from the 0.4-0.6 band and looking for patterns in the raw data.</div>
+            </details>
+        </div>
+
+        <hr>
+
+        <h2>Week 4: The Unprompted Discovery</h2>
+
+        <p>Amit books a meeting without being asked, <span class="weeb" data-tl="looking at raw data is honest, hard work, okay?">two weeks after the last check-in.</span></p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">So I looked at the histogram before coming to you this time.</div>
+            </div>
+        </div>
+
+        <p class="stage-direction">Mentor, internally: Progress..</p>
+
+        <div class="dialogue">
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">It's bimodal but there's a weird small bump around 0.5. I sampled from it. They're all new users with less than 2 weeks tenure?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">And why would the model be uncertain about them?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">Not enough behavioral signal yet. We don't know their patterns.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Right. So what would you do about this operationally?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">Maybe don't score users until they have minimum tenure? <em>pause</em> Or build a separate model for new users with different features?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Either works. The point is you found a STRUCTURAL reason for uncertainty, not just noise. The model is uncertain because it SHOULD be uncertain given limited information. That's different from the model being bad.</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker amit">amit</div>
+                <div class="dialogue-content">So uncertainty isn't always a problem to fix?</div>
+            </div>
+            <div class="dialogue-line">
+                <div class="speaker mentor">mentor</div>
+                <div class="dialogue-content">Exactly. Sometimes it's the model correctly reporting that the problem is hard. Your job is to figure out which kind of uncertainty you're looking at. Calibrated uncertainty is a FEATURE. Miscalibrated confidence is a bug.</div>
+            </div>
+        </div>
+
+        <!-- INTERACTIVE 3 -->
+        <div class="interactive" id="quiz3">
+            <div class="interactive-title">spot the subpopulation</div>
+            <p class="interactive-prompt">Here's a probability distribution with an anomaly. Look at the bump around 0.3:</p>
+
+            <div class="histogram-container">
+                <div class="histogram" id="histogram3">
+                    <div class="histogram-bar" style="height: 85%"></div>
+                    <div class="histogram-bar" style="height: 45%"></div>
+                    <div class="histogram-bar" style="height: 38%"></div>
+                    <div class="histogram-bar" style="height: 15%"></div>
+                    <div class="histogram-bar" style="height: 8%"></div>
+                    <div class="histogram-bar" style="height: 5%"></div>
+                    <div class="histogram-bar" style="height: 4%"></div>
+                    <div class="histogram-bar" style="height: 8%"></div>
+                    <div class="histogram-bar" style="height: 35%"></div>
+                    <div class="histogram-bar" style="height: 92%"></div>
+                </div>
+                <div class="histogram-labels">
+                    <span class="histogram-label">0.0</span>
+                    <span class="histogram-label">0.5</span>
+                    <span class="histogram-label">1.0</span>
+                </div>
+            </div>
+
+            <p class="interactive-prompt">This is a loan default model. you sample from the 0.2-0.4 band and find they're all applicants from a recently acquired subsidiary. what's the right interpretation?</p>
+
+            <div class="quiz-options" id="quiz3-options">
+                <button class="quiz-option" data-answer="a">a) The model is broken and needs retraining</button>
+                <button class="quiz-option" data-answer="b">b) Distribution shift - the subsidiary's customers have different patterns</button>
+                <button class="quiz-option" data-answer="c">c) This is just noise, ignore it</button>
+                <button class="quiz-option" data-answer="d">d) Calibration error - recalibrate the model</button>
+            </div>
+
+            <button class="reveal-btn" id="reveal3">show answer</button>
+
+            <div class="answer-reveal" id="answer3">
+                <div class="answer-label">diagnosis</div>
+                <div class="answer-content">
+                    <p><strong>b) Distribution shift</strong> - the subsidiary's customers are out-of-distribution relative to training data. The model's uncertainty is CORRECT - it's telling you "I haven't seen people like this before." Appropriate responses: collect labels on these customers to evaluate actual performance, consider training a separate model for the subsidiary, or add subsidiary-specific features to help the model discriminate within this population.</p>
+                    <p style="margin-top: 1rem; margin-bottom: 0;"><em>Recalibration (d) wouldn't help because the model's uncertainty reflects genuine lack of knowledge, not miscalibration. You need more information, not different thresholds.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <h2>The Pedagogy</h2>
+
+        <p>The pattern if you're trying to teach someone this (or develop this skill yourself):</p>
+
+        <details>
+            <summary>expand: mentorship framework</summary>
+            <div>
+                <p><strong>1.</strong> Force them to LOOK at the model's belief distribution before anything else</p>
+                <p><strong>2.</strong> Ask what it MEANS - don't explain, ask</p>
+                <p><strong>3.</strong> Let them sit in confusion until they generate hypotheses</p>
+                <p><strong>4.</strong> Guide toward the diagnostic action that would distinguish hypotheses</p>
+                <p><strong>5.</strong> Let THEM discover the pathology</p>
+                <p><strong>6.</strong> Repeat until their priors update</p>
+            </div>
+        </details>
+
+        <p>You cannot lecture someone into developing model intuition. They have to FEEL the "oh no" moment repeatedly until the suspicion becomes automatic. The goal is pattern recognition, not pattern memorization.</p>
+
+        <p>As far as I can tell the biggest failure mode in ML education is teaching people to train models without <span class="weeb" data-tl="heh">training</span> them to be suspicious of the outputs. We produce practitioners who can produce models but can't investigate them.</p>
+
+        <hr>
+
+        <h2>Why This Matters</h2>
+
+        <p>The adversarial mindset isn't about being pessimistic. It's about understanding that your model is a system with legible internal states, and those states tell you things that aggregate metrics hide.</p>
+
+        <p>The shape of the probability distribution is <b>the model's worldview</b> compressed into a histogram. Bimodal means "I think this is easy", uniform means "I'm guessing", peaked at 0.5 means "I'm stuck", a weird bump means "there's a subpopulation I'm confused about".</p>
+
+        <p>Models can tell you what they believe, but <em>they can't tell you <b>when</b> they're wrong</em>. That's your job. And it's faster to do it now than to wait for reality to tell you.</p>
+
+
+        <div class="callout">
+            <p>There's more to this: error taxonomy, model phenomenology, ways of reading what your model is actually doing. Just if not more importantly, what to actually do with models and how to operationalize them. This is one entry point. Have fun exploring!</p>
+        </div>
+
+        <footer>
+            <p>create date: 2025-12-27</p>
+        </footer>
+    </div>
+
+    <script>
+        // Quiz functionality
+        function setupQuiz(quizId, correctAnswer) {
+            const options = document.querySelectorAll(`#${quizId}-options .quiz-option`);
+            const revealBtn = document.getElementById(quizId.replace('quiz', 'reveal'));
+            const answerDiv = document.getElementById(quizId.replace('quiz', 'answer'));
+            let selectedAnswer = null;
+            let revealed = false;
+
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    if (revealed) return;
+                    
+                    options.forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedAnswer = option.dataset.answer;
+                });
+            });
+
+            revealBtn.addEventListener('click', () => {
+                if (revealed) return;
+                revealed = true;
+
+                options.forEach(option => {
+                    if (option.dataset.answer === correctAnswer) {
+                        option.classList.add('correct');
+                    } else if (option.classList.contains('selected')) {
+                        option.classList.add('incorrect');
+                    }
+                });
+
+                answerDiv.classList.add('visible');
+                revealBtn.disabled = true;
+                revealBtn.textContent = 'answered';
+            });
+        }
+
+        // Initialize quizzes
+        setupQuiz('quiz1', 'c');
+        setupQuiz('quiz3', 'b');
+    </script>
+</body>
+</html>
