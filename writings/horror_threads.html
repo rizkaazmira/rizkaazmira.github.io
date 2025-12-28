@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why twitter horror threads are ontologically incompatible with films</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --border: #d5d3cf;
+            --code-bg: #eae8e4;
+            --horror-red: #8b3a3a;
+            --horror-red-glow: rgba(139, 58, 58, 0.15);
+            --calm-blue: #5a7a8b;
+            --success: #4a7c4a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; scroll-behavior: smooth; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* top navbar */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 0.75rem 2rem;
+        }
+        .top-nav-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-nav-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .top-nav-brand:hover { color: var(--accent); }
+        .top-nav-links { display: flex; gap: 1.25rem; }
+        .top-nav-links a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .top-nav-links a:hover { color: var(--accent); }
+        .top-nav-links a.active { color: var(--accent); }
+
+        .container { max-width: 680px; margin: 0 auto; padding: 6rem 2rem 8rem; }
+
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover { color: var(--accent); }
+        .back-link::before { content: '←'; }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+        .subtitle { font-style: italic; color: var(--text-secondary); font-size: 1.1rem; }
+        .meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+
+        p { margin-bottom: 1.5rem; color: var(--text-secondary); }
+        strong, b { color: var(--text-primary); font-weight: 500; }
+        em { font-style: italic; color: var(--text-primary); }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 4rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        .tldr {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .tldr-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .tldr p { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        .tldr p:last-child { margin-bottom: 0; }
+
+        .callout {
+            background: var(--accent-glow);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .callout p { margin-bottom: 0; color: var(--text-primary); font-size: 0.95rem; }
+
+        /* horror-themed callout */
+        .callout-horror {
+            background: var(--horror-red-glow);
+            border-left: 2px solid var(--horror-red);
+        }
+        .callout-horror p { color: var(--text-primary); }
+
+        blockquote {
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        blockquote cite {
+            display: block;
+            margin-top: 0.75rem;
+            font-style: normal;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+        summary {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            list-style: none;
+            transition: color 0.2s ease;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: '+ '; color: var(--accent); }
+        details[open] summary::before { content: '− '; }
+        summary:hover { color: var(--text-primary); }
+        details > div {
+            padding: 0 1.25rem 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        ul.prose-list {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+        ul.prose-list li { margin-bottom: 0.5rem; }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+        /* interactive chart */
+        .chart-section {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .chart-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            text-transform: lowercase;
+        }
+        .chart-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .chart-container {
+            background: var(--bg-primary);
+            border-radius: 4px;
+            height: 200px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+        .chart-y-label {
+            position: absolute;
+            left: -2.5rem;
+            top: 50%;
+            transform: rotate(-90deg) translateX(50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* toggle buttons */
+        .chart-toggles {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .toggle-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .toggle-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* event markers */
+        .event-markers {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 0.75rem;
+            padding: 0 2rem;
+        }
+        .event-marker {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .event-marker.spike {
+            color: var(--horror-red);
+        }
+
+        /* comparison grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .comparison-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        .comparison-card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: lowercase;
+            margin-bottom: 0.5rem;
+        }
+        .comparison-card p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+            color: var(--text-secondary);
+        }
+
+        /* the two objectives */
+        .objectives {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .objective {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .objective-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .objective-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            text-transform: lowercase;
+            margin-bottom: 0.5rem;
+        }
+        .objective-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .objective.loser {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        .objective.winner {
+            border-color: var(--horror-red);
+            background: var(--horror-red-glow);
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .footer-tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .top-nav { padding: 0.75rem 1.25rem; }
+            .top-nav-links { gap: 0.75rem; }
+            .top-nav-links a { font-size: 0.65rem; }
+            .container { padding: 5rem 1.25rem 4rem; }
+            h1 { font-size: 1.3rem; }
+            .comparison-grid, .objectives { grid-template-columns: 1fr; }
+            .chart-toggles { justify-content: center; }
+        }
+
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="index.html" class="top-nav-brand">Rizka Azmira</a>
+            <div class="top-nav-links">
+                <a href="index.html">home</a>
+                <a href="about.html">about</a>
+                <a href="index.html" class="active">writing</a>
+                <a href="art.html">art</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">back to home</a>
+            <h1>Why Twitter horror threads are ontologically incompatible with films</h1>
+            <p class="subtitle">On pacing, survival, and the jumpscare industrial complex</p>
+        </header>
+
+        <p>There's been a wave of Indonesian horror films adapted from viral Twitter threads these past few years. As a horror fan captive to the local market, something's been bugging me about them: <em>they're not scary</em>. Tense, maybe. Loud, definitely. But not scary in the way that lingers.</p>
+
+        <p>I think the problem is neither bad directors nor lazy writing, but something more structural: the source material itself is ontologically incompatible with film as a medium.</p>
+
+        <p>Let me explain.</p>
+
+        <div class="tldr">
+            <div class="tldr-label">the argument</div>
+            <p>Good horror is about <strong>pace-setting your heartbeat</strong>. Long stretches of mundanity, punctuated by escalating spikes of dread. The valleys matter as much as the peaks.</p>
+            <p>Twitter threads can't afford valleys. Every tweet is an exit point, so they've evolved to be all peaks. When you attempt to adapt that faithfully to film, you get 90 minutes of jumpscares with no room to breathe.</p>
+        </div>
+
+        <h2>the shape of good horror</h2>
+
+        <p>My argument is this: the key to good horror is the <strong>intentional pace-setting of your heartbeat</strong>.</p>
+
+        <p>The best horror understands that true terror lives in long bouts of mundanity, punctuated by increasingly oppressive stakes-raising events. In supernatural horror: ghost sightings that escalate. In thrillers: almost-encounters with the killer that get closer each time.</p>
+
+        <p>If I had to draw it, good horror pacing looks something like this:</p>
+
+        <div class="chart-section">
+            <div class="chart-title">horror pacing: the ideal shape</div>
+            <div class="chart-subtitle">Tension over time in well-paced horror</div>
+            <div class="chart-container">
+                <canvas id="goodHorrorChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="event-markers">
+                <span class="event-marker">setup</span>
+                <span class="event-marker spike">e₁</span>
+                <span class="event-marker">breathe</span>
+                <span class="event-marker spike">e₂</span>
+                <span class="event-marker">breathe</span>
+                <span class="event-marker spike">e₃</span>
+            </div>
+            <div class="chart-labels">
+                <span>beginning</span>
+                <span>time →</span>
+                <span>end</span>
+            </div>
+        </div>
+
+        <p>Notice the valleys. <strong>The valleys are load-bearing.</strong> They're where dread accumulates, where you start to relax — just enough that the next spike actually lands. Without valleys, spikes become noise.</p>
+
+        <h2>the twitter thread paradox</h2>
+
+        <p>Horror threads are fascinating to me because they have two almost contradicting objectives:</p>
+
+        <div class="objectives">
+            <div class="objective loser">
+                <div class="objective-number">1</div>
+                <div class="objective-title">set the mood</div>
+                <div class="objective-desc">Classic horror pacing — build dread through atmosphere and tension</div>
+            </div>
+            <div class="objective winner">
+                <div class="objective-number">2</div>
+                <div class="objective-title">don't lose your reader</div>
+                <div class="objective-desc">Survival in the attention economy — every tweet must earn the next</div>
+            </div>
+        </div>
+
+        <p>Here's the problem: on Twitter, <strong>individual tweets are more than just plot points — they're also opportunities for readers to churn</strong>.</p>
+
+        <p>Remember that readers have full autonomy over their attention. Not only can they exit at any point of the thread, they can also glaze over, skim, or slowly savor any section. This is self-directed consumption.</p>
+
+        <p>Be "uninteresting" for a couple of consecutive tweets? It might be joever for your thread. Readers bounce. The algorithm stops pushing. Your horror story dies at tweet 7 of 34. Manoj Punjabi never hears of your name.</p>
+
+        <div class="callout-horror callout">
+            <p>Survival is the one true objective, and on social media survival means: never let them get bored — which means: never give them valleys.</p>
+        </div>
+
+        <p>Increasingly, as the "art form" of horror threads has matured, we see that the second objective has overridden the first almost completely. Threads have evolved toward all-spikes-all-the-time because that's what survives.</p>
+
+        <h2>the adaptation problem</h2>
+
+        <p>Here's where it gets interesting. This spike-heavy structure <em>works</em> for threads — because readers control their own pacing. They can pause between tweets. They can put their phone down and come back. They can glaze through the exposition and slow down for the scary parts.</p>
+
+        <p>In other words: <strong>horror threads are self-directed by their readers.</strong> The threadwriter can go all-in on highlights and jumpscares without narrative breathers, because the reader will create their own breathers.</p>
+
+        <p>This breaks down completely when real movie directors try to adapt threads to cinema. Adapting a thread as-is means you get a movie consisting <em>exclusively</em> of jumpscares and (maybe) exposition for background context. The chart looks like this:</p>
+
+        <div class="chart-section">
+            <div class="chart-title">compare the pacing</div>
+            <div class="chart-subtitle">Toggle between pacing styles to see the difference</div>
+            
+            <div class="chart-toggles">
+                <button class="toggle-btn active" data-mode="good">Good horror (film)</button>
+                <button class="toggle-btn" data-mode="thread">Thread-adapted</button>
+                <button class="toggle-btn" data-mode="compare">Overlay both</button>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="comparisonChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-labels">
+                <span>beginning</span>
+                <span>time →</span>
+                <span>end</span>
+            </div>
+        </div>
+
+        <p>Do you see the problem? In the thread-adapted version, there's <strong>no room to breathe</strong>. The audience can't self-pace anymore — they're locked into the director's timeline. If that timeline is all peaks, the peaks stop being peaks. They become a flat line of sensory assault.</p>
+
+        <h2>why this matters</h2>
+
+        <p>This isn't a "threads bad, films good" argument. Threads have genuinely uncovered something interesting about Twitter as a medium: <strong>reader autonomy changes what "good pacing" means</strong>.</p>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <div class="comparison-card-title">thread pacing</div>
+                <p>Reader controls speed. Writer optimizes for retention per tweet. Valleys are outsourced to the reader.</p>
+            </div>
+            <div class="comparison-card">
+                <div class="comparison-card-title">film pacing</div>
+                <p>Director controls speed. Valleys are mandatory for peaks to land. You can't outsource breathing room.</p>
+            </div>
+        </div>
+
+        <p>The mistake isn't that threads have bad pacing — it's that <strong>thread pacing is non-transferable</strong>. It's optimized for a medium where attention is perpetually at risk and the audience holds the pause button. Take away that pause button, and the whole structure collapses.</p>
+
+        <h2>what would good adaptation look like?</h2>
+
+        <p>I originally wrote this in early 2024, when thread-to-film adaptations were still doing the one-to-one translation thing. Upon revisiting in late 2025, I think the industry... is figuring it out? Recent adaptations have started treating threads as <em>premise + highlights</em> rather than shot-by-shot blueprints. The valleys are back. Here's what's working:</p>
+
+        <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-primary); margin: 2rem 0 1rem; text-transform: lowercase;">the good (valleys rebuilt)</h3>
+
+        <div class="reco-card" style="background: var(--bg-secondary); border-left: 3px solid var(--success); padding: 1.25rem 1.5rem; margin: 1rem 0; border-radius: 0 4px 4px 0;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.5rem;">Janur Ireng: Sewu Dino The Prequel</div>
+            <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-muted);">I honestly can count the number of jumpscares with two hands (P0.5 for Indonesian horrors, okay). We even got some characterization too? What the hell?</p>
+        </div>
+
+        <div class="reco-card" style="background: var(--bg-secondary); border-left: 3px solid var(--success); padding: 1.25rem 1.5rem; margin: 1rem 0; border-radius: 0 4px 4px 0;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.5rem;">Sosok Ketiga: Lintrik</div>
+            <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-muted);">Unfortunately, I think this was not adapted from a horror thread, rendering my point moot. It's a great horror, though, and a nice example of properly situated valleys.</p>
+        </div>
+
+        <h3 style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-primary); margin: 2rem 0 1rem; text-transform: lowercase;">the bad (still jumpscare factories)</h3>
+
+        <p>For contrast, these are still doing the one-to-one translation thing. All peaks, no room to breathe:</p>
+
+        <div class="reco-card" style="background: var(--bg-secondary); border-left: 3px solid var(--horror-red); padding: 1.25rem 1.5rem; margin: 1rem 0; border-radius: 0 4px 4px 0;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.5rem;">Pabrik Gula</div>
+            <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-muted);">Faithful to the title, this was a literal factory — of jumpscares. Many scenes are unconnected events that bear no narrative continuity i.e., highlight reel of scary tweets.</p>
+        </div>
+
+        <div class="reco-card" style="background: var(--bg-secondary); border-left: 3px solid var(--horror-red); padding: 1.25rem 1.5rem; margin: 1rem 0; border-radius: 0 4px 4px 0;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.5rem;">KKN di Desa Penari</div>
+            <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-muted);">The original sin. Self-explanatory.</p>
+        </div>
+
+        <p style="margin-top: 1.5rem;">The pattern: the good ones treat the thread as a premise to expand. The bad ones treat it as a screenplay to film. The irony holds: a faithful adaptation of a horror thread is still a bad movie.</p>
+
+        <h2>the takeaway</h2>
+
+        <div class="callout">
+            <p>Different media have different temporal ontologies. What works in one doesn't transfer to another — neither is better, they just operate on fundamentally different assumptions about who controls time.</p>
+        </div>
+
+        <p>Twitter horror threads are optimized for survival in an attention economy where every sentence is an exit door. Films are optimized for an audience that has already committed to sitting in the dark for two hours. You can't adapt one to the other without rebuilding from first principles. And right now, Indonesian horror cinema is still learning this lesson the loud, jumpscare-filled way.</p>
+
+        <footer>
+            <p class="footer-tagline">inception date: 2024-04-19</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart drawing utilities
+        function setupCanvas(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            return { ctx, width: rect.width, height: rect.height };
+        }
+
+        function drawLine(ctx, points, color, width, height, lineWidth = 2.5) {
+            const padding = { top: 20, right: 20, bottom: 20, left: 20 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+
+            points.forEach((val, i) => {
+                const x = padding.left + (i / (points.length - 1)) * chartWidth;
+                const y = padding.top + chartHeight - (val / 100) * chartHeight;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+        }
+
+        function drawGrid(ctx, width, height) {
+            const padding = { top: 20, right: 20, bottom: 20, left: 20 };
+            ctx.strokeStyle = '#d5d3cf';
+            ctx.lineWidth = 1;
+
+            // Horizontal grid lines
+            for (let i = 0; i <= 4; i++) {
+                const y = padding.top + ((height - padding.top - padding.bottom) / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+            }
+        }
+
+        // Good horror pacing data (valleys + peaks)
+        const goodHorrorData = [
+            10, 12, 15, 13, 11, 10, 12, 15, 18, 22, // slow build
+            35, 55, 70, 50, 30, // first spike (e1)
+            25, 20, 18, 15, 14, 13, 15, 18, 22, 28, // valley + build
+            45, 65, 80, 60, 35, // second spike (e2)
+            28, 22, 18, 16, 18, 22, 28, 35, 45, // valley + build
+            60, 78, 95, 88, 75, 60, 45 // final spike (e3) + resolution
+        ];
+
+        // Thread-adapted pacing (all peaks, no valleys)
+        const threadData = [
+            20, 35, 55, 70, 55, // immediate spike
+            50, 60, 75, 85, 70, // another spike
+            65, 75, 88, 78, 68, // another spike
+            72, 82, 92, 85, 75, // another spike
+            70, 80, 90, 82, 72, // another spike
+            75, 85, 95, 90, 80, // another spike
+            78, 88, 98, 92, 85, 78, 70 // final spike
+        ];
+
+        // Draw the first (static) chart
+        const goodHorrorCanvas = document.getElementById('goodHorrorChart');
+        const { ctx: ctx1, width: w1, height: h1 } = setupCanvas(goodHorrorCanvas);
+        drawGrid(ctx1, w1, h1);
+        drawLine(ctx1, goodHorrorData, '#8b3a3a', w1, h1);
+
+        // Draw the comparison (interactive) chart
+        const comparisonCanvas = document.getElementById('comparisonChart');
+        let compCtx, compWidth, compHeight;
+
+        function initComparisonChart() {
+            const setup = setupCanvas(comparisonCanvas);
+            compCtx = setup.ctx;
+            compWidth = setup.width;
+            compHeight = setup.height;
+            drawComparisonChart('good');
+        }
+
+        function drawComparisonChart(mode) {
+            compCtx.clearRect(0, 0, compWidth, compHeight);
+            drawGrid(compCtx, compWidth, compHeight);
+
+            if (mode === 'good') {
+                drawLine(compCtx, goodHorrorData, '#8b3a3a', compWidth, compHeight);
+            } else if (mode === 'thread') {
+                drawLine(compCtx, threadData, '#e89b3f', compWidth, compHeight);
+            } else if (mode === 'compare') {
+                drawLine(compCtx, goodHorrorData, '#8b3a3a', compWidth, compHeight, 2);
+                drawLine(compCtx, threadData, '#e89b3f', compWidth, compHeight, 2);
+            }
+        }
+
+        // Toggle button handlers
+        const toggleBtns = document.querySelectorAll('.toggle-btn');
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                drawComparisonChart(btn.dataset.mode);
+            });
+        });
+
+        // Initialize
+        initComparisonChart();
+
+        // Redraw on resize
+        window.addEventListener('resize', () => {
+            const { ctx: newCtx1, width: newW1, height: newH1 } = setupCanvas(goodHorrorCanvas);
+            drawGrid(newCtx1, newW1, newH1);
+            drawLine(newCtx1, goodHorrorData, '#8b3a3a', newW1, newH1);
+            
+            initComparisonChart();
+        });
+    </script>
+</body>
+</html>

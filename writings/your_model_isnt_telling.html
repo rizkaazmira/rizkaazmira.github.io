@@ -44,18 +44,69 @@
             padding: 0;
         }
 
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 0.75rem 2rem;
+        }
+        .top-nav-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-nav-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .top-nav-brand:hover { color: var(--accent); }
+        .top-nav-links { display: flex; gap: 1.25rem; }
+        .top-nav-links a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .top-nav-links a:hover { color: var(--accent); }
+        .top-nav-links a.active { color: var(--accent); }
+
         .container {
             max-width: 680px;
             margin: 0 auto;
-            padding: 4rem 2rem 8rem;
+            padding: 6rem 2rem 8rem;
         }
 
         /* header */
-        header {
-            margin-bottom: 2rem;
-            padding-bottom: 0rem;
-            border-bottom: 1px solid var(--border);
+
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
         }
+        .back-link:hover { color: var(--accent); }
+        .back-link::before { content: '←'; }
 
         h1 {
             font-family: 'JetBrains Mono', monospace;
@@ -508,6 +559,10 @@
                 font-size: 16px;
             }
 
+            .top-nav { padding: 0.75rem 1.25rem; }
+            .top-nav-links { gap: 0.75rem; }
+            .top-nav-links a { font-size: 0.65rem; }
+            
             .container {
                 padding: 2rem 1.25rem 4rem;
             }
@@ -548,10 +603,22 @@
     </style>
 </head>
 <body>
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="index.html" class="top-nav-brand">Rizka Azmira</a>
+            <div class="top-nav-links">
+                <a href="index.html">home</a>
+                <a href="about.html">about</a>
+                <a href="index.html" class="active">writing</a>
+                <a href="art.html">art</a>
+            </div>
+        </div>
+    </nav>
     <div class="container">
         <header>
+            <a href="index.html" class="back-link">back to home</a>
             <h1>Your model isn't telling you everything</h1>
-            <p class="">On developing feel for what your classifier is actually doing</p>
+            <p class="subtitle">On developing feel for what your classifier is actually doing</p>
         </header>
 
         
@@ -975,7 +1042,7 @@
         </div>
 
         <footer>
-            <p>create date: 2025-12-27</p>
+            <p>inception date: 2025-12-27</p>
         </footer>
     </div>
 

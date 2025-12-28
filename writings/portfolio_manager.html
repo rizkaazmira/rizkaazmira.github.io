@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're not a portfolio manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --border: #d5d3cf;
+            --code-bg: #eae8e4;
+            --success: #4a7c4a;
+            --danger: #9b4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; scroll-behavior: smooth; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 0.75rem 2rem;
+        }
+        .top-nav-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-nav-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .top-nav-brand:hover { color: var(--accent); }
+        .top-nav-links { display: flex; gap: 1.25rem; }
+        .top-nav-links a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .top-nav-links a:hover { color: var(--accent); }
+        .top-nav-links a.active { color: var(--accent); }
+
+        .container { max-width: 680px; margin: 0 auto; padding: 6rem 2rem 8rem; }
+
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover { color: var(--accent); }
+        .back-link::before { content: '←'; }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+        .subtitle { font-style: italic; color: var(--text-secondary); font-size: 1.1rem; }
+        .meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+
+        p { margin-bottom: 1.5rem; color: var(--text-secondary); }
+        strong, b { color: var(--text-primary); font-weight: 500; }
+        em { font-style: italic; color: var(--text-primary); }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 4rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        .tldr {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .tldr-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .tldr p { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        .tldr p:last-child { margin-bottom: 0; }
+
+        .callout {
+            background: var(--accent-glow);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .callout p { margin-bottom: 0; color: var(--text-primary); font-size: 0.95rem; }
+
+        .callout-danger {
+            background: rgba(155, 68, 68, 0.08);
+            border-left: 2px solid var(--danger);
+        }
+
+        blockquote {
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+        summary {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            list-style: none;
+            transition: color 0.2s ease;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: '+ '; color: var(--accent); }
+        details[open] summary::before { content: '− '; }
+        summary:hover { color: var(--text-primary); }
+        details > div {
+            padding: 0 1.25rem 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        ul.prose-list {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+        ul.prose-list li { margin-bottom: 0.5rem; }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+        /* 2x2 matrix */
+        .matrix-section {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .matrix-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            text-transform: lowercase;
+        }
+        .matrix-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .matrix-container {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 0;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .matrix-corner {
+            background: var(--bg-secondary);
+            padding: 0.75rem;
+        }
+        .matrix-header {
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            text-transform: lowercase;
+            border-bottom: 1px solid var(--border);
+        }
+        .matrix-row-header {
+            background: var(--bg-secondary);
+            padding: 1rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            text-align: center;
+            text-transform: lowercase;
+            border-right: 1px solid var(--border);
+        }
+        .matrix-cell {
+            padding: 1.25rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .matrix-cell:hover {
+            background: var(--bg-secondary);
+        }
+        .matrix-cell.highlighted {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+        }
+        .matrix-cell.danger {
+            background: rgba(155, 68, 68, 0.08);
+            border-color: var(--danger);
+        }
+        .matrix-cell.success {
+            background: rgba(74, 124, 74, 0.08);
+            border-color: var(--success);
+        }
+        .matrix-cell-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+            text-transform: lowercase;
+        }
+        .matrix-cell-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .matrix-cell-emoji {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .matrix-legend {
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* examples table */
+        .examples-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+        .examples-table th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 400;
+        }
+        .examples-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .examples-table tr:last-child td { border-bottom: none; }
+        .examples-table .valid {
+            color: var(--success);
+        }
+        .examples-table .invalid {
+            color: var(--danger);
+        }
+
+        /* the punchline box */
+        .punchline {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .punchline-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .punchline-subtext {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* footer */
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .top-nav { padding: 0.75rem 1.25rem; }
+            .top-nav-links { gap: 0.75rem; }
+            .top-nav-links a { font-size: 0.65rem; }
+            .container { padding: 5rem 1.25rem 4rem; }
+            h1 { font-size: 1.3rem; }
+            .matrix-cell { padding: 0.75rem 0.5rem; }
+            .matrix-cell-desc { font-size: 0.7rem; }
+            .matrix-row-header { padding: 0.5rem; font-size: 0.6rem; }
+        }
+
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="index.html" class="top-nav-brand">Rizka Azmira</a>
+            <div class="top-nav-links">
+                <a href="index.html">home</a>
+                <a href="about.html">about</a>
+                <a href="index.html" class="active">writing</a>
+                <a href="art.html">art</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">back to home</a>
+            <h1>You're not a portfolio manager</h1>
+            <p class="subtitle">On the misuse of ranking systems in domains without allocation problems</p>
+        </header>
+
+        <p>Here's a thing that bothers me: people love assigning numerical ratings to things. Restaurants, movies, potential dates. "She's a 7." "That place is a solid 8.5." Decile rankings, tier lists, 1-10 scales.</p>
+
+        <p>But here's the question nobody asks: <strong>what decision does this rating serve?</strong></p>
+
+        <div class="tldr">
+            <div class="tldr-label">the argument</div>
+            <p>Ordering entities and assigning scores to deciles means nothing unless you're managing a large quantity of them and need sorting criteria to allocate resources efficiently.</p>
+            <p>If you don't have an allocation problem, you don't need a ranking system. You're not doing analytics. you're doing numerology.</p>
+        </div>
+
+        <h2>why ranking systems exist</h2>
+
+        <p>Let's think about who actually needs to rank things numerically:</p>
+
+        <ul class="prose-list">
+            <li><strong>Venture capitalists</strong> — See 1000 startups, fund 10. Need a scoring system to triage.</li>
+            <li><strong>Admissions officers</strong> — 50,000 applicants, 2,000 spots. Need a way to sort.</li>
+            <li><strong>Hiring managers at scale</strong> — 500 resumes, 5 interviews. Need to filter.</li>
+            <li><strong>Recommendation algorithms</strong> — millions of items, one screen. Need to rank.</li>
+        </ul>
+
+        <p>Notice the pattern: <strong>large pool, scarce resource, allocation decision</strong>.</p>
+
+        <p>The ranking exists to answer a specific question: "Given limited resources, which entities should receive them?" The score is not the point; it is merely a tool to make the decision tractable.</p>
+
+        <h2>the 2x2</h2>
+
+        <p>Let's map this out. When does a ranking system make sense?</p>
+
+        <div class="matrix-section">
+            <div class="matrix-title">when do you need a ranking system?</div>
+            <div class="matrix-subtitle">The only valid quadrant is top-right</div>
+            
+            <div class="matrix-container">
+                <div class="matrix-corner"></div>
+                <div class="matrix-header">small pool</div>
+                <div class="matrix-header">large pool</div>
+                
+                <div class="matrix-row-header">allocation problem</div>
+                <div class="matrix-cell" id="cell-small-yes">
+                    <div class="matrix-cell-emoji">🤷</div>
+                    <div class="matrix-cell-title">overkill</div>
+                    <div class="matrix-cell-desc">you know you can just evaluate each one individually, right?</div>
+                </div>
+                <div class="matrix-cell success" id="cell-large-yes">
+                    <div class="matrix-cell-emoji">✅</div>
+                    <div class="matrix-cell-title">valid use case</div>
+                    <div class="matrix-cell-desc">this is what ranking systems are for</div>
+                </div>
+                
+                <div class="matrix-row-header">no allocation problem</div>
+                <div class="matrix-cell danger" id="cell-small-no">
+                    <div class="matrix-cell-emoji">🚫</div>
+                    <div class="matrix-cell-title">numerology</div>
+                    <div class="matrix-cell-desc">you're not deciding anything. stop scoring.</div>
+                </div>
+                <div class="matrix-cell" id="cell-large-no">
+                    <div class="matrix-cell-emoji">🤔</div>
+                    <div class="matrix-cell-title">census data</div>
+                    <div class="matrix-cell-desc">fine for research, but what are you doing with it?</div>
+                </div>
+            </div>
+        </div>
+
+        <p>The bottom-left quadrant is where most casual rating behavior lives: small pool, no allocation decision required. Neither triaging, nor optimizing, you're just... assigning numbers to things for the vibes.</p>
+
+        <h2>the operationalization</h2>
+
+        <p>Here's the crude but effective test:</p>
+
+        <div class="punchline">
+            <div class="punchline-text">if you get no pussy, don't bother rating people</div>
+            <div class="punchline-subtext">— the operational definition of "do you have an allocation problem"</div>
+        </div>
+
+        <p>This sounds crass but it's a simple heuristic. The question is: <strong>does your ranking connect to any decision you're (in the position of) actually making?</strong></p>
+
+        <p>If you're actively dating multiple people and need to allocate your limited time, okay, maybe a ranking helps you prioritize. (honestly even then, you're probably better off trusting your guts.)</p>
+
+        <p>But if you're just rating strangers on the internet? Rating celebrities? Rating people you'll never interact with? What is the ranking <em>for</em>? What decision does it serve?</p>
+
+        <p>None. The answer is none.</p>
+
+        <h2>examples</h2>
+
+        <table class="examples-table">
+            <thead>
+                <tr>
+                    <th>Behavior</th>
+                    <th>Pool size</th>
+                    <th>Allocation?</th>
+                    <th>Verdict</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>VC scoring startups for investment</td>
+                    <td>1000s</td>
+                    <td>Yes (capital)</td>
+                    <td class="valid">Valid</td>
+                </tr>
+                <tr>
+                    <td>Bumble algorithm ranking matches</td>
+                    <td>Millions</td>
+                    <td>Yes (screen space)</td>
+                    <td class="valid">Valid</td>
+                </tr>
+                <tr>
+                    <td>You ranking the 3 people you're dating</td>
+                    <td>3</td>
+                    <td>Kinda (time)</td>
+                    <td class="valid">...ok lah</td>
+                </tr>
+                <tr>
+                    <td>You rating celebrities 1-10</td>
+                    <td>∞</td>
+                    <td>No</td>
+                    <td class="invalid">Numerology</td>
+                </tr>
+                <tr>
+                    <td>You rating strangers on Instagram feed</td>
+                    <td>∞</td>
+                    <td>No</td>
+                    <td class="invalid">Numerology</td>
+                </tr>
+                <tr>
+                    <td>Tier lists of fictional characters</td>
+                    <td>Varies</td>
+                    <td>No</td>
+                    <td class="invalid">Fun but numerology</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>why do people do this anyway</h2>
+
+        <p>If ranking without allocation serves no decision, why is it so popular? Some hypotheses:</p>
+
+        <ul class="prose-list">
+            <li><strong>Borrowed status</strong> — Assigning scores makes you feel like an evaluator, a judge, someone whose opinion sorts the world. It's cosplaying as a portfolio manager without skin in the game.</li>
+            <li><strong>False precision</strong> — Numbers feel more rigorous than "idk she's lowkey cute". The decimals are pure cope, though.</li>
+            <li><strong>Social bonding</strong> — "Rating" things together is a form of group vibes-calibration. The scores don't matter; the consensus-building does.</li>
+            <li><strong>Avoiding commitment</strong> — A score is safer than a decision. "She's a 7" doesn't require you to do anything. It's opinion without stakes.</li>
+        </ul>
+
+        <p>None of these are <em>wrong</em> exactly, but let's be honest about what's happening — we're doing social performance with a quantitative aesthetic.</p>
+
+        <h2>the meta-point</h2>
+
+        <div class="callout">
+            <p>Metrics without decisions are just vibes with decimal places. If your ranking doesn't connect to an action you're going to take, it's a coping mechanism, not a tool.</p>
+        </div>
+
+        <p>This applies beyond dating, obviously:</p>
+
+        <ul class="prose-list">
+            <li>Rating books you'll never recommend to anyone</li>
+            <li>Scoring restaurants you'll never revisit</li>
+            <li>Ranking productivity systems you'll never implement</li>
+            <li>Tier-listing movies to nobody in particular</li>
+        </ul>
+
+        <details>
+            <summary>expand: when does this take not apply</summary>
+            <div>
+                <p>Some valid reasons to score things without allocation:</p>
+                <ul class="prose-list" style="margin-top: 0.5rem;">
+                    <li><strong>Memory aid</strong> — You're rating movies so future-you remembers what you liked. The decision is "should i rewatch/recommend this". Valid.</li>
+                    <li><strong>Preference elicitation</strong> — You're trying to discover your own taste by forcing yourself to compare. The decision is "what do i actually like". Valid, although debatable whether this requires numbers instead of binary decision.</li>
+                    <li><strong>Content creation</strong> — Tier lists as entertainment. The decision is "what content should I make". Valid, I guess.</li>
+                </ul>
+                <p style="margin-top: 1rem;">Be honest about which category you're in.</p>
+            </div>
+        </details>
+
+        <footer>
+            inception date: 2022-07-27
+        </footer>
+    </div>
+</body>
+</html>

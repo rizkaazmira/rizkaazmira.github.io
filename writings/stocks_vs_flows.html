@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stocks vs flows: a measurement artifact wearing cultural clothes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-dim: #a67c52;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --danger: #9b4444;
+            --success: #4a7c4a;
+            --code-bg: #eae8e4;
+            --border: #d5d3cf;
+            --hijab-color: #e89b3f;
+            --prayer-color: #d64a6a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 0.75rem 2rem;
+        }
+        .top-nav-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-nav-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .top-nav-brand:hover { color: var(--accent); }
+        .top-nav-links { display: flex; gap: 1.25rem; }
+        .top-nav-links a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .top-nav-links a:hover { color: var(--accent); }
+        .top-nav-links a.active { color: var(--accent); }
+
+        .container { max-width: 680px; margin: 0 auto; padding: 6rem 2rem 8rem; }
+
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover { color: var(--accent); }
+        .back-link::before { content: '←'; }
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+        .subtitle { font-style: italic; color: var(--text-secondary); font-size: 1.1rem; }
+        .meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+
+        p { margin-bottom: 1.5rem; color: var(--text-secondary); }
+        strong, b { color: var(--text-primary); font-weight: 500; }
+        em { font-style: italic; color: var(--text-primary); }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 4rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        /* links */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        /* tldr box */
+        .tldr {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .tldr-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .tldr p { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        .tldr p:last-child { margin-bottom: 0; }
+
+        /* comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+        .comparison-table th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 400;
+        }
+        .comparison-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table .label-cell {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .stock-tag, .flow-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.2rem 0.4rem;
+            border-radius: 2px;
+        }
+        .stock-tag { background: rgba(232, 155, 63, 0.2); color: #b87a20; }
+        .flow-tag { background: rgba(214, 74, 106, 0.2); color: var(--prayer-color); }
+
+        /* blockquote for paglia */
+        blockquote {
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        blockquote cite {
+            display: block;
+            margin-top: 0.75rem;
+            font-style: normal;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* details/summary for code toggle */
+        details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+        summary {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            list-style: none;
+            transition: color 0.2s ease;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: '+ '; color: var(--accent); }
+        details[open] summary::before { content: '− '; }
+        summary:hover { color: var(--text-primary); }
+        details > div {
+            padding: 0 1.25rem 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        /* code block */
+        pre {
+            background: var(--code-bg);
+            padding: 1.25rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: var(--code-bg);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+        pre code { background: none; padding: 0; }
+
+        /* callout */
+        .callout {
+            background: var(--accent-glow);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .callout p { margin-bottom: 0; color: var(--text-primary); font-size: 0.95rem; }
+
+        /* analogy box */
+        .analogy {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+        }
+        .analogy-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .analogy p { margin-bottom: 0; font-size: 0.95rem; }
+
+        /* mechanism cards */
+        .mechanism-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .mechanism-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        .mechanism-card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: lowercase;
+            margin-bottom: 0.5rem;
+        }
+        .mechanism-card p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+            color: var(--text-secondary);
+        }
+
+        /* chart placeholder */
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        .chart-placeholder {
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+        .actual-chart {
+            height: 280px;
+            position: relative;
+        }
+        .actual-chart canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .chart-caption {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        /* interactive simulator */
+        .simulator {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .simulator-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            text-transform: lowercase;
+        }
+        .simulator-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .simulator-chart {
+            background: var(--bg-primary);
+            border-radius: 4px;
+            height: 200px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .simulator-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .simulator-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .control-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .control-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 0.15rem 0.4rem;
+            border-radius: 2px;
+        }
+        .control-description {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        .simulator-legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-dot.hijab { background: var(--hijab-color); }
+        .legend-dot.prayer { background: var(--prayer-color); }
+        .reset-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+        .reset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+        ul.prose-list {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+        ul.prose-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .top-nav { padding: 0.75rem 1.25rem; }
+            .top-nav-links { gap: 0.75rem; }
+            .top-nav-links a { font-size: 0.65rem; }
+            .container { padding: 2rem 1.25rem 4rem; }
+            h1 { font-size: 1.4rem; }
+            .comparison-table { font-size: 0.8rem; }
+            .comparison-table th, .comparison-table td { padding: 0.5rem; }
+            .mechanism-grid { grid-template-columns: 1fr; }
+            .simulator { padding: 1.25rem; }
+        }
+
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="index.html" class="top-nav-brand">Rizka Azmira</a>
+            <div class="top-nav-links">
+                <a href="index.html">home</a>
+                <a href="about.html">about</a>
+                <a href="index.html" class="active">writing</a>
+                <a href="art.html">art</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">back to home</a>
+            <h1>Stocks vs flows</h1>
+            <p class="subtitle">A measurement artifact wearing cultural clothes</p>
+        </header>
+
+        <h2>the puzzle</h2>
+        <p>There's this chart that circulated on Indonesian social media earlier this year. Two religious indicators, same population, opposite trajectories:</p>
+
+        <ul class="prose-list">
+            <li><strong style="color: var(--hijab-color);">Hijab adoption</strong> among women: climbing steadily since 1999</li>
+            <li><strong style="color: var(--prayer-color);">Friday prayer attendance</strong> among men: declining over the same period</li>
+        </ul>
+
+        <div class="chart-container">
+            <div class="actual-chart">
+                <canvas id="actualDataChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-caption">Source: <a href="https://x.com/GabrielSaidR/status/1836110546212372958">Twitter</a></div>
+        </div>
+
+        <script>
+        // Actual data chart
+        (function() {
+            const canvas = document.getElementById('actualDataChart');
+            const ctx = canvas.getContext('2d');
+            
+            function setupCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+            
+            const hijabData = [
+                { year: 1999, value: 40 },
+                { year: 2000, value: 42 },
+                { year: 2001, value: 44 },
+                { year: 2002, value: 46 },
+                { year: 2003, value: 48 },
+                { year: 2004, value: 50 },
+                { year: 2005, value: 52 },
+                { year: 2006, value: 54 },
+                { year: 2007, value: 56 },
+                { year: 2008, value: 58 },
+                { year: 2009, value: 60 },
+                { year: 2010, value: 61 },
+                { year: 2011, value: 62 },
+                { year: 2012, value: 64 },
+                { year: 2013, value: 65 },
+                { year: 2014, value: 66 },
+                { year: 2015, value: 67 },
+                { year: 2016, value: 68 },
+                { year: 2017, value: 69 },
+                { year: 2018, value: 70 },
+                { year: 2019, value: 71 },
+                { year: 2020, value: 72 },
+                { year: 2021, value: 73 },
+                { year: 2022, value: 74 },
+                { year: 2023, value: 75 },
+                { year: 2024, value: 77.5 }
+            ];
+            
+            const prayerData = [
+                { year: 1999, value: 75 },
+                { year: 2000, value: 74 },
+                { year: 2001, value: 74 },
+                { year: 2002, value: 73 },
+                { year: 2003, value: 73 },
+                { year: 2004, value: 72 },
+                { year: 2005, value: 72 },
+                { year: 2006, value: 71 },
+                { year: 2007, value: 71 },
+                { year: 2008, value: 70 },
+                { year: 2009, value: 70 },
+                { year: 2010, value: 69 },
+                { year: 2011, value: 69 },
+                { year: 2012, value: 68 },
+                { year: 2013, value: 68 },
+                { year: 2014, value: 67 },
+                { year: 2015, value: 67 },
+                { year: 2016, value: 66 },
+                { year: 2017, value: 66 },
+                { year: 2018, value: 65 },
+                { year: 2019, value: 65 },
+                { year: 2020, value: 64 },
+                { year: 2021, value: 64 },
+                { year: 2022, value: 63 },
+                { year: 2023, value: 62 },
+                { year: 2024, value: 62.5 }
+            ];
+            
+            function drawChart() {
+                const { width, height } = setupCanvas();
+                const padding = { top: 30, right: 30, bottom: 40, left: 50 };
+                const chartWidth = width - padding.left - padding.right;
+                const chartHeight = height - padding.top - padding.bottom;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // Grid lines
+                ctx.strokeStyle = '#d5d3cf';
+                ctx.lineWidth = 1;
+                
+                // Y-axis grid and labels
+                for (let i = 0; i <= 4; i++) {
+                    const y = padding.top + (chartHeight / 4) * i;
+                    const value = 80 - (i * 10);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(padding.left, y);
+                    ctx.lineTo(width - padding.right, y);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#888580';
+                    ctx.font = '11px JetBrains Mono, monospace';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(value + '%', padding.left - 10, y + 4);
+                }
+                
+                // X-axis labels
+                ctx.textAlign = 'center';
+                const years = [1999, 2004, 2009, 2014, 2019, 2024];
+                years.forEach(year => {
+                    const x = padding.left + ((year - 1999) / 25) * chartWidth;
+                    ctx.fillText(year.toString(), x, height - padding.bottom + 20);
+                });
+                
+                // Draw lines
+                function drawLine(data, color) {
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2.5;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    
+                    data.forEach((point, i) => {
+                        const x = padding.left + ((point.year - 1999) / 25) * chartWidth;
+                        const y = padding.top + chartHeight - ((point.value - 40) / 40) * chartHeight;
+                        
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+                    
+                    ctx.stroke();
+                }
+                
+                // Draw data points
+                function drawPoints(data, color) {
+                    ctx.fillStyle = color;
+                    data.forEach(point => {
+                        const x = padding.left + ((point.year - 1999) / 25) * chartWidth;
+                        const y = padding.top + chartHeight - ((point.value - 40) / 40) * chartHeight;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+                
+                drawLine(hijabData, '#e89b3f');
+                drawLine(prayerData, '#d64a6a');
+                drawPoints(hijabData, '#e89b3f');
+                drawPoints(prayerData, '#d64a6a');
+                
+                // Legend
+                const legendY = padding.top - 15;
+                
+                ctx.fillStyle = '#e89b3f';
+                ctx.beginPath();
+                ctx.arc(padding.left + 10, legendY, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#888580';
+                ctx.font = '11px JetBrains Mono, monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText('Hijab adoption (women)', padding.left + 22, legendY + 4);
+                
+                ctx.fillStyle = '#d64a6a';
+                ctx.beginPath();
+                ctx.arc(padding.left + 180, legendY, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#888580';
+                ctx.fillText('Friday prayer (men)', padding.left + 192, legendY + 4);
+            }
+            
+            drawChart();
+            window.addEventListener('resize', drawChart);
+        })();
+        </script>
+
+        <p>The hot takes write themselves:</p>
+        <blockquote>
+            "Women are becoming more religious while men slack off."<br>
+            "Islam is feminizing."<br>
+            "Men are losing their faith."
+            <cite>— netizen</cite>
+        </blockquote>
+
+        <p>I think these takes are probably wrong — or at least, they're answering the wrong question entirely. It's not that men and women have different levels of devotion. It's that we're comparing two completely different <em>types</em> of measurements and treating them as if they're the same thing.</p>
+
+        <div class="tldr">
+            <div class="tldr-label">tl;dr</div>
+            <p><strong>Hijab percentage</strong> goes up because it's a <em>stock</em> — once you adopt it, you (usually) keep it. Mom wears hijab, daughter grows up thinking it's normal, daughter adopts it too. The number accumulates over time.</p>
+            <p><strong>Friday prayer percentage</strong> goes down because it's a <em>flow</em> — every single (or <em>three</em>) week is a fresh decision. Macet? Skip it. Tired? Skip it. The number is sensitive to whatever friction exists <em>right now</em>.</p>
+            <p>You can get these diverging curves from a single, unchanged level of religiosity, i.e., no "men are less devout" required.</p>
+        </div>
+
+        <h2>stocks vs flows: a quick primer</h2>
+
+        <p>This distinction comes from systems thinking, but it's pretty intuitive once you see it:</p>
+
+        <p><strong>A stock</strong> is a quantity that accumulates. Think of it like water in a bathtub; it builds up over time and stays there until something actively drains it. Examples: total number of homeowners, people with college degrees, Twitter followers.</p>
+
+        <p><strong>A flow</strong> is a rate of activity. It's the water coming out of the tap, not the water in the tub. It measures what's happening <em>right now</em>, and it resets constantly. Examples: monthly home sales, current enrollment rates, daily active users.</p>
+
+        <p>The key insight: <strong>stocks remember the past. Flows forget it.</strong></p>
+
+        <div class="analogy">
+            <div class="analogy-label">analogy</div>
+            <p>Comparing a stock to a flow and moralizing the gap is like comparing "how many people own umbrellas" to "how often it rained this month" and concluding the climate is getting fickle. It's a category error.</p>
+        </div>
+
+        <h2>why hijab and friday prayer aren't comparable</h2>
+
+        <p>Let's break down what these two metrics actually measure:</p>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Hijab adoption</th>
+                    <th>Friday prayer</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="label-cell">What it measures</td>
+                    <td>An ongoing state (wearing hijab)</td>
+                    <td>A repeated action (attending prayer)</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Decision frequency</td>
+                    <td>Once, maybe a few times in life</td>
+                    <td>Every single week</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Cost to reverse</td>
+                    <td>High (social pressure, family expectations, visible change)</td>
+                    <td>Low (nobody's taking attendance)</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Metric type</td>
+                    <td><span class="stock-tag">Stock</span></td>
+                    <td><span class="flow-tag">Flow</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Once a woman starts wearing hijab, she's counted as "hijab-wearing" until she actively stops, which is socially costly and relatively rare. The number (mostly) goes up.</p>
+
+        <p>Friday prayer attendance, on the other hand, resets every week. Every Friday, every man makes a fresh choice: go or don't go. Last week doesn't matter. The number is constantly being re-measured from scratch.</p>
+
+        <h2>identity vs audition</h2>
+
+        <p>There's a deeper asymmetry here beyond just the measurement mechanics.</p>
+
+        <blockquote>
+            "A woman simply is; a man must become."
+            <cite>— Camille Paglia</cite>
+        </blockquote>
+
+        <p>Hijab is about <em>identity</em>. Once it's part of who you are: part of your wardrobe, your social media presence, how your family knows you — stepping away from it is a <em>visible event</em>. People notice, people comment. It costs social capital.</p>
+
+        <p>Friday prayer is about <em>performance</em>. It's an audition you repeat every week, and auditions can be skipped. Traffic was bad, meeting overran, you're tired. Nobody's counting sandals at the mosque entrance.</p>
+
+        <p>Modernity creates friction for both, but the friction affects them differently. Skipping Friday prayer is invisible in a way removing hijab is not. The same underlying forces (urbanization, busy schedules, competing demands on time) will drag down flows much faster than stocks.</p>
+
+        <h2>the compounding effect</h2>
+
+        <p>There's another mechanism that makes stocks rise over time: <strong>generational compounding</strong>. Here's how it works for hijab:</p>
+
+        <ul class="prose-list">
+            <li>Mom wears hijab -> daughter grows up seeing it as normal</li>
+            <li>Daughter's "threshold" for adoption is lower (it's just what women in her family do)</li>
+            <li>Daughter adopts -> her future daughter's threshold is even lower</li>
+            <li>Each generation stacks on top of the last</li>
+        </ul>
+
+        <p>But Friday prayer doesn't compound the same way:</p>
+
+        <ul class="prose-list">
+            <li>Dad attends Friday prayer -> son... makes his own choice every week</li>
+            <li>Dad's past attendance doesn't obligate son's future attendance</li>
+            <li>Each generation starts fresh</li>
+        </ul>
+
+        <p>Stocks accumulate across generations, whereas flows don't. Even if religiosity stays perfectly flat, you'd expect hijab rates to rise and prayer attendance to stay flat or decline.</p>
+
+        <h2>play with the model</h2>
+
+        <p>Here's a simple simulation where both men and women have the exact same underlying religiosity and the only difference is whether we're measuring a stock or a flow.</p>
+
+        <p>Drag the sliders to see how different factors affect the two curves:</p>
+
+        <div class="simulator">
+            <div class="simulator-title">stock vs flow simulator</div>
+            <div class="simulator-subtitle">Same religiosity, different measurement types</div>
+            
+            <div class="simulator-chart">
+                <canvas id="simChart" class="simulator-canvas"></canvas>
+            </div>
+            
+            <div class="simulator-legend">
+                <div class="legend-item"><span class="legend-dot hijab"></span> Hijab % (stock)</div>
+                <div class="legend-item"><span class="legend-dot prayer"></span> Friday prayer % (flow)</div>
+            </div>
+
+            <div class="simulator-controls">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span class="control-name">Base religiosity</span>
+                        <span class="control-value" id="religiosityValue">0.50</span>
+                    </div>
+                    <input type="range" id="religiosity" min="0" max="100" value="50">
+                    <div class="control-description">The underlying level of religious feeling in the population. Affects both curves equally.</div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span class="control-name">Hijab stickiness</span>
+                        <span class="control-value" id="stickinessValue">0.95</span>
+                    </div>
+                    <input type="range" id="stickiness" min="50" max="100" value="95">
+                    <div class="control-description">How likely someone is to keep wearing hijab once adopted. High = very few people stop.</div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span class="control-name">Weekly friction</span>
+                        <span class="control-value" id="frictionValue">0.30</span>
+                    </div>
+                    <input type="range" id="friction" min="0" max="80" value="30">
+                    <div class="control-description">How much modern life interferes with weekly prayer. Traffic, work hours, competing priorities.</div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span class="control-name">Generational boost</span>
+                        <span class="control-value" id="compoundValue">0.20</span>
+                    </div>
+                    <input type="range" id="compound" min="0" max="50" value="20">
+                    <div class="control-description">How much easier it is to adopt hijab if your mother wore it, i.e., the compounding effect.</div>
+                </div>
+            </div>
+
+            <button class="reset-btn" id="resetBtn">reset to defaults</button>
+        </div>
+
+        <p>Notice how you can create diverging curves (hijab rising, prayer falling) even when the "base religiosity" slider stays constant. That's the stock/flow effect in action.</p>
+
+        <details>
+            <summary>expand: the actual math (for the curious)</summary>
+            <div>
+                <p>The model has two components running on the same underlying religiosity score <code>r</code>:</p>
+<pre><code># stock (hijab)
+each year:
+  if not wearing and r > threshold:
+    adopt with probability α
+  if wearing:
+    stop with probability (1 - stickiness)
+
+# flow (friday prayer)  
+each week:
+  attend with probability σ(r - friction)
+  where σ is a sigmoid function</code></pre>
+                <p style="margin-top: 1rem;">The key difference: stocks only need to cross the threshold once and then they accumulate. Flows get re-evaluated constantly, so friction compounds week after week.</p>
+            </div>
+        </details>
+
+        <h2>what's actually driving the trends</h2>
+
+        <p>If underlying religiosity isn't changing much, what <em>is</em> causing the visible divergence? Small forces that affect stocks and flows differently:</p>
+
+        <div class="mechanism-grid">
+            <div class="mechanism-card">
+                <div class="mechanism-card-title">modest fashion boom</div>
+                <p>Hijabs got cheaper, more stylish, more available. This lowers the adoption threshold i.e., more women cross it each year.</p>
+            </div>
+            <div class="mechanism-card">
+                <div class="mechanism-card-title">urban time crunch</div>
+                <p>Friday prayer may take up an entire hour. Jakarta traffic makes this harder every year. Flows are sensitive to weekly friction.</p>
+            </div>
+            <div class="mechanism-card">
+                <div class="mechanism-card-title">visibility asymmetry</div>
+                <p>Instagram shows who's wearing hijab. Nobody's posting mosque attendance. Social pressure works on visible stocks, not invisible flows.</p>
+            </div>
+            <div class="mechanism-card">
+                <div class="mechanism-card-title">gig economy hours</div>
+                <p>Flexible jobs = unpredictable schedules. Friday prayer has a fixed time slot. Stocks don't care when you adopted; flows care about <em>this</em> Friday.</p>
+            </div>
+        </div>
+
+        <p>None of these require men to become less devout. They just require flows to be more sensitive to friction than stocks (which they are, by definition).</p>
+
+        <h2>how would we know if men actually were less religious?</h2>
+
+        <p>This is the important question. If the stock/flow explanation is just an artifact, what would <em>actual</em> declining male religiosity look like?</p>
+
+        <p>We'd expect to see:</p>
+
+        <ul class="prose-list">
+            <li><strong>Other male religious markers declining too</strong> — Ramadan fasting completion, zakat payments, haji savings rates</li>
+            <li><strong>Self-reported religiosity declining</strong> — Not just behavior, but stated beliefs and importance of faith</li>
+            <li><strong>Sharper declines in younger cohorts</strong> — If it's a real shift, it should show up generationally</li>
+            <li><strong>Declining religiosity in low-friction contexts</strong> — Are men praying less at home too, or just skipping the mosque?</li>
+        </ul>
+
+        <p>If Friday prayer drops but these other indicators hold steady (or rise), we're probably looking at a friction story, not a faith story.</p>
+
+        <p><em>(I haven't checked all this data myself. Someone with access to the data should. The point is: you'd need to check before drawing conclusions.)</em></p>
+
+        <h2>where else does this pattern show up</h2>
+
+        <p>The stock/flow confusion isn't unique to Indonesian religion. Once you see it, you'll notice it everywhere:</p>
+
+        <ul class="prose-list">
+            <li><strong>Marriage rates vs dating app usage</strong> — Married % (stock) can rise while swipes/month (flow) falls</li>
+            <li><strong>Degree attainment vs enrollment</strong> — People with degrees (stock) vs current students (flow)</li>
+            <li><strong>Gym memberships vs gym visits</strong> — Members (stock) vs average weekly visits (flow)</li>
+        </ul>
+
+        <p>Any time you see two trend lines diverging and someone's drawing big conclusions from the gap, check: is one a stock and one a flow? Often that's the whole story.</p>
+
+        <h2>the takeaway</h2>
+
+        <div class="callout">
+            <p>Before you moralize a trend gap, check your units. Stocks and flows measure fundamentally different things. Comparing them is a category error, and the "insight" you draw from the comparison might just be an artifact of the measurement, not a real phenomenon in the world.</p>
+        </div>
+
+        <p>Sometimes the gap is real. Sometimes it's just the metric wearing cultural clothes.</p>
+        <footer>
+            <p>inception date: 2024-09-18</p>
+        </footer>
+    </div>
+
+    <script>
+        // Simulator
+        const canvas = document.getElementById('simChart');
+        const ctx = canvas.getContext('2d');
+        
+        // Make canvas sharp on retina displays
+        function setupCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+        }
+        
+        // Sliders
+        const sliders = {
+            religiosity: document.getElementById('religiosity'),
+            stickiness: document.getElementById('stickiness'),
+            friction: document.getElementById('friction'),
+            compound: document.getElementById('compound')
+        };
+        
+        const values = {
+            religiosity: document.getElementById('religiosityValue'),
+            stickiness: document.getElementById('stickinessValue'),
+            friction: document.getElementById('frictionValue'),
+            compound: document.getElementById('compoundValue')
+        };
+        
+        const defaults = {
+            religiosity: 50,
+            stickiness: 95,
+            friction: 30,
+            compound: 20
+        };
+
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+
+        function simulate() {
+            const baseReligiosity = sliders.religiosity.value / 100;
+            const stickiness = sliders.stickiness.value / 100;
+            const friction = sliders.friction.value / 100;
+            const compound = sliders.compound.value / 100;
+            
+            // Update displayed values
+            values.religiosity.textContent = baseReligiosity.toFixed(2);
+            values.stickiness.textContent = stickiness.toFixed(2);
+            values.friction.textContent = friction.toFixed(2);
+            values.compound.textContent = compound.toFixed(2);
+            
+            const years = 25;
+            const hijabData = [];
+            const prayerData = [];
+            
+            let hijabPct = 0.40; // starting point
+            
+            for (let year = 0; year < years; year++) {
+                // Stock (hijab): accumulates, with generational compounding
+                const adoptionBoost = hijabPct * compound; // more hijabis = easier to adopt
+                const adoptionProb = baseReligiosity * 0.15 + adoptionBoost * 0.5;
+                const newAdoptions = (1 - hijabPct) * adoptionProb;
+                const dropouts = hijabPct * (1 - stickiness);
+                hijabPct = Math.min(0.95, Math.max(0.1, hijabPct + newAdoptions - dropouts));
+                
+                // Flow (prayer): weekly decision affected by friction
+                const prayerProb = sigmoid((baseReligiosity - 0.5) * 4 - friction * 2 - year * 0.02);
+                const prayerPct = 0.75 * prayerProb + 0.1; // bounded
+                
+                hijabData.push(hijabPct * 100);
+                prayerData.push(prayerPct * 100);
+            }
+            
+            drawChart(hijabData, prayerData);
+        }
+
+        function drawChart(hijabData, prayerData) {
+            const rect = canvas.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height;
+            const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Grid lines
+            ctx.strokeStyle = '#d5d3cf';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 4; i++) {
+                const y = padding.top + (chartHeight / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+                
+                // Y-axis labels
+                ctx.fillStyle = '#888580';
+                ctx.font = '10px JetBrains Mono';
+                ctx.textAlign = 'right';
+                ctx.fillText((100 - i * 25) + '%', padding.left - 8, y + 4);
+            }
+            
+            // X-axis labels
+            ctx.textAlign = 'center';
+            ctx.fillText('1999', padding.left, height - 8);
+            ctx.fillText('2023', width - padding.right, height - 8);
+            
+            // Draw lines
+            function drawLine(data, color) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                
+                data.forEach((val, i) => {
+                    const x = padding.left + (i / (data.length - 1)) * chartWidth;
+                    const y = padding.top + chartHeight - (val / 100) * chartHeight;
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                
+                ctx.stroke();
+            }
+            
+            drawLine(hijabData, '#e89b3f');
+            drawLine(prayerData, '#d64a6a');
+        }
+
+        // Event listeners
+        Object.values(sliders).forEach(slider => {
+            slider.addEventListener('input', simulate);
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            Object.keys(defaults).forEach(key => {
+                sliders[key].value = defaults[key];
+            });
+            simulate();
+        });
+
+        // Initial setup
+        window.addEventListener('resize', () => {
+            setupCanvas();
+            simulate();
+        });
+        
+        setupCanvas();
+        simulate();
+    </script>
+</body>
+</html>
