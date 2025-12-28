@@ -35,6 +35,18 @@
             min-height: 100vh;
         }
 
+        /* links */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent);
+        }
+
         /* top navbar */
         .top-nav {
             position: fixed;
@@ -405,17 +417,17 @@
         <div class="top-nav-inner">
             <a href="index.html" class="top-nav-brand">Rizka Azmira</a>
             <div class="top-nav-links">
-                <a href="index.html">home</a>
-                <a href="about.html">about</a>
-                <a href="index.html" class="active">writing</a>
-                <a href="art.html">art</a>
+                <a href="/">home</a>
+                <a href="/about.html">about</a>
+                <a href="/" class="active">writing</a>
+                <a href="/art.html">art</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
         <header>
-            <a href="index.html" class="back-link">back to home</a>
+            <a href="/" class="back-link">back to home</a>
             <h1>Why Twitter horror threads are ontologically incompatible with films</h1>
             <p class="subtitle">On pacing, survival, and the jumpscare industrial complex</p>
         </header>
