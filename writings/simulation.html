@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You haven't told your simulation everything</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #f0eeeb;
+            --bg-tertiary: #e8e6e2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --text-muted: #888580;
+            --accent: #8b5a2b;
+            --accent-dim: #a67c52;
+            --accent-glow: rgba(139, 90, 43, 0.08);
+            --border: #d5d3cf;
+            --code-bg: #eae8e4;
+            --success: #4a7c4a;
+            --danger: #9b4444;
+            --warning: #b8860b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 18px; scroll-behavior: smooth; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Newsreader', Georgia, serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            padding: 0.75rem 2rem;
+        }
+        .top-nav-inner {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-nav-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .top-nav-brand:hover { color: var(--accent); }
+        .top-nav-links { display: flex; gap: 1.25rem; }
+        .top-nav-links a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .top-nav-links a:hover { color: var(--accent); }
+        .top-nav-links a.active { color: var(--accent); }
+
+        .container { max-width: 680px; margin: 0 auto; padding: 6rem 2rem 8rem; }
+
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover { color: var(--accent); }
+        .back-link::before { content: '←'; }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+        .subtitle { font-style: italic; color: var(--text-secondary); font-size: 1.1rem; }
+        .meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            text-transform: lowercase;
+            letter-spacing: 0.05em;
+        }
+
+        p { margin-bottom: 1.5rem; color: var(--text-secondary); }
+        strong, b { color: var(--text-primary); font-weight: 500; }
+        em { font-style: italic; color: var(--text-primary); }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: lowercase;
+            letter-spacing: 0.1em;
+            margin: 4rem 0 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        h2::before { content: '/// '; color: var(--text-muted); }
+
+        .tldr {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .tldr-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .tldr p { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        .tldr p:last-child { margin-bottom: 0; }
+
+        .callout {
+            background: var(--accent-glow);
+            border-left: 2px solid var(--accent);
+            padding: 1.25rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .callout p { margin-bottom: 0; color: var(--text-primary); font-size: 0.95rem; }
+
+        blockquote {
+            border-left: 2px solid var(--border);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: var(--code-bg);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+
+        ul.prose-list, ol.prose-list {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+        ol.prose-list {
+            list-style-type: decimal;
+        }
+        ul.prose-list li, ol.prose-list li { 
+            margin-bottom: 0.5rem;
+            padding-left: 0.25rem;
+        }
+        
+        /* inline code/math styling */
+        code, .math {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: var(--bg-secondary);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            color: var(--accent);
+        }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+        details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+        summary {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            list-style: none;
+            transition: color 0.2s ease;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before { content: '+ '; color: var(--accent); }
+        details[open] summary::before { content: '− '; }
+        summary:hover { color: var(--text-primary); }
+        details > div {
+            padding: 0 1.25rem 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        /* interactive sections */
+        .interactive {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .interactive-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            text-transform: lowercase;
+        }
+        .interactive-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        /* assumption checklist */
+        .assumption-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .assumption-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .assumption-item:hover {
+            border-color: var(--accent);
+        }
+        .assumption-item.active {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .assumption-item.violated {
+            border-color: var(--danger);
+            background: rgba(155, 68, 68, 0.08);
+        }
+        .assumption-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.7rem;
+            color: var(--success);
+        }
+        .assumption-item.active .assumption-checkbox {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+        .assumption-item.violated .assumption-checkbox {
+            border-color: var(--danger);
+            background: var(--danger);
+            color: var(--bg-primary);
+        }
+        .assumption-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* chart */
+        .chart-container {
+            background: var(--bg-primary);
+            border-radius: 4px;
+            height: 200px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .chart-caption {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* stats display */
+        .stats-row {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .stat-box {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+        .stat-value.good { color: var(--success); }
+        .stat-value.bad { color: var(--danger); }
+        .stat-value.warn { color: var(--warning); }
+
+        /* slider */
+        .slider-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .slider-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .slider-label span {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .sim-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .sim-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .sim-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        .slider-markers {
+            position: relative;
+            height: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .slider-markers .marker {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            transform: translateX(-50%);
+            white-space: nowrap;
+            padding: 0.2rem 0.4rem;
+            background: var(--bg-secondary);
+            border-radius: 2px;
+        }
+
+        /* comparison chart */
+        .comparison-chart {
+            background: var(--bg-primary);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .comparison-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .comparison-row:last-child {
+            margin-bottom: 0;
+        }
+        .comparison-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .comparison-bar-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .comparison-bar {
+            height: 24px;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            min-width: 20px;
+        }
+        .comparison-bar.correct {
+            background: var(--success);
+        }
+        .comparison-bar.buggy {
+            background: var(--danger);
+        }
+        .comparison-bar.truth {
+            background: var(--accent);
+        }
+        .comparison-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            min-width: 50px;
+        }
+
+        /* bug reveal message */
+        .bug-reveal {
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--border);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 4px 4px 0;
+            transition: border-color 0.3s;
+        }
+        .bug-reveal.warning {
+            border-color: var(--warning);
+        }
+        .bug-reveal.danger {
+            border-color: var(--danger);
+        }
+        .bug-reveal p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        /* ratio detail breakdown */
+        .ratio-detail {
+            background: var(--bg-primary);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+        }
+        .ratio-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .ratio-detail-row:last-child {
+            margin-bottom: 0;
+        }
+        .ratio-detail-label {
+            color: var(--text-muted);
+            min-width: 120px;
+        }
+        .ratio-detail-value {
+            color: var(--accent);
+            font-weight: 500;
+            min-width: 50px;
+        }
+        .ratio-detail-note {
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            opacity: 0.8;
+        }
+
+        /* run button */
+        .run-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: lowercase;
+            background: var(--accent);
+            border: none;
+            color: var(--bg-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .run-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 90, 43, 0.2);
+        }
+        .run-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* bug log */
+        .bug-log {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-top: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .bug-log-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+        }
+        .bug-entry {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .bug-entry:last-child { border-bottom: none; }
+        .bug-entry-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+        .bug-iteration {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+        }
+        .bug-coverage {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+        }
+        .bug-description {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        .bug-fix {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--success);
+            margin-top: 0.25rem;
+        }
+
+        /* iteration game */
+        .iteration-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .scenario-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .scenario-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-secondary);
+        }
+        .scenario-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .scenario-btn.discovered {
+            background: rgba(74, 124, 74, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* links */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: lowercase;
+        }
+
+        @media (max-width: 600px) {
+            html { font-size: 16px; }
+            .top-nav { padding: 0.75rem 1.25rem; }
+            .container { padding: 5rem 1.25rem 4rem; }
+            h1 { font-size: 1.3rem; }
+            .assumption-grid { grid-template-columns: 1fr; }
+            .stats-row { flex-direction: column; }
+        }
+
+        ::selection { background: var(--accent); color: var(--bg-primary); }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <a href="/" class="top-nav-brand">Rizka Azmira</a>
+            <div class="top-nav-links">
+                <a href="/">home</a>
+                <a href="/about.html">about</a>
+                <a href="/" class="active">writing</a>
+                <a href="/art.html">art</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">back to home</a>
+            <h1>You haven't told your simulation everything</h1>
+            <p class="subtitle">On the epistemology of testing statistical methods</p>
+        </header>
+
+        <p>Here's the core problem with building experimentation infrastructure: <strong>you only get one draw per experiment</strong>.</p>
+
+        <p>When you train an ML model, you can pull 100 predictions, look at them, and ask "does this make sense?". You have many instantiations of your model's behavior to examine.</p>
+
+        <p>When you run an A/B test, you get one p-value. One confidence interval. One decision. You don't get to see the counterfactual. You can't look at a single confidence interval and know whether it's one of the 5% that missed... or whether your methodology even delivers the 5% it promised.</p>
+
+        <div class="tldr">
+            <div class="tldr-label">the instantiation problem</div>
+            <p>Every experiment is a single draw from an unknowable distribution. If your methodology has a bug, e.g., if your coverage is 87% instead of 95%, you don't see "87% coverage." You see "this experiment was significant" or "wasn't.", and you have no way to know if that specific result was a false positive caused by the bug.</p>
+        </div>
+
+        <h2>simulation as the only verification</h2>
+
+        <p>Here's the consequence: <strong>you cannot verify your methodology by running real experiments</strong>.</p>
+        
+        <p>If you run 100 A/B tests and 7 of them are false positives, you don't know that. You just see 7 "significant" results mixed in with your true effects. You can't separate the bugs from the signal.</p>
+
+        <p>The only way to check whether your method actually delivers 95% coverage is to simulate — to generate thousands of fake experiments where you <em>know</em> the ground truth, run your methodology, and count how often it's right.</p>
+
+        <p>This is what makes experimentation infrastructure different from most software. Normally you can test your code by running it and checking the output, but statistical methodology can be wrong in ways that are invisible at the individual level. <b></b>The only feedback loop is simulation.</p>
+
+        <h2>the catch</h2>
+
+        <p>Simulation has a fundamental limit: <strong>you can only test failure modes you can imagine</strong>.</p>
+        
+        <p>Every simulation encodes assumptions. When you generate fake data, you're choosing a data-generating process (DGP). Gaussian errors? Log-normal? Clustered? Your call. And when you validate against that DGP, you're not testing whether your method works. You're testing whether it works <em>when your assumptions hold</em>. The bugs that ship are the ones where your assumptions didn't hold, i.e., the DGPs you didn't think to simulate.</p>
+
+        <div class="callout">
+            <p>Your simulation suite is a confession. It's a list of the things you thought to worry about. The things you didn't think to test become the bugs that ship.</p>
+        </div>
+
+        <h2>the parameter space problem</h2>
+
+        <p>When you validate a method with simulation, you're implicitly making two choices:</p>
+
+        <ol class="prose-list">
+            <li><strong>Which failure modes to model</strong> — Clustered observations, heavy tails, heteroskedasticity, whatever you think might go wrong</li>
+            <li><strong>Which parameters to test</strong> — Sample size, effect size, variance, the knobs you twiddle</li>
+        </ol>
+
+        <p>Your simulation is a joint sample over (<code>failure modes</code> × <code>parameters</code>). Bugs survive in the regions you didn't sample.</p>
+
+        <p>This is true for <em>every</em> kind of bug:</p>
+
+        <ul class="prose-list">
+            <li><strong>Implementation bugs</strong> (e.g., sign error in a correction term) — Survive when your parameters make the correction term negligible</li>
+            <li><strong>Modeling bugs</strong> (e.g., wrong formula for ratio metrics) — Survive when your parameters make both formulas converge</li>
+            <li><strong>Assumption violations</strong> (e.g., using z when you should use t) — Survive when your parameters make z and t identical</li>
+        </ul>
+
+        <p>The bugs look different, the fixes are different, but, the root cause is the same: <strong>the simulation didn't sample the region of parameter space where the bug manifests visibly</strong>.</p>
+
+        <div class="callout">
+            <p>Every bug is invisible <em>somewhere</em> and visible <em>somewhere else</em>. The question is whether your simulation sampled the visible region.</p>
+        </div>
+
+        <h2>example 1: the degrees of freedom bug</h2>
+
+        <p>Here's a common bug: using a normal approximation (<code>z = 1.96</code>) when you should use a t critical value. At large sample sizes, they're identical. At small sample sizes, they diverge.</p>
+
+        <p>Drag the slider to move through parameter space. Watch the bug go from invisible to obvious.</p>
+
+        <div class="interactive" id="df-bug">
+            <div class="interactive-title">the degrees of freedom bug</div>
+            <div class="interactive-subtitle">Sample size controls whether the bug is visible</div>
+
+            <div class="slider-container">
+                <label class="slider-label">sample size per arm: <span id="df-n-value">100</span></label>
+                <input type="range" id="df-n-slider" min="8" max="500" value="100" step="1" class="sim-slider">
+                <div class="slider-markers">
+                    <span class="marker" style="left: 4%">Pilot (n=30)</span>
+                    <span class="marker" style="left: 60%">Typical (n=300)</span>
+                </div>
+            </div>
+
+            <div class="comparison-chart" id="df-comparison">
+                <div class="comparison-row">
+                    <div class="comparison-label">t critical (correct)</div>
+                    <div class="comparison-bar-container">
+                        <div class="comparison-bar correct" id="df-t-bar"></div>
+                        <span class="comparison-value" id="df-t-value">1.984</span>
+                    </div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-label">z critical (buggy)</div>
+                    <div class="comparison-bar-container">
+                        <div class="comparison-bar buggy" id="df-z-bar"></div>
+                        <span class="comparison-value" id="df-z-value">1.960</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-label">CI too narrow by</div>
+                    <div class="stat-value" id="df-error">1.2%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Actual coverage</div>
+                    <div class="stat-value" id="df-coverage">94.2%</div>
+                </div>
+            </div>
+
+            <div class="bug-reveal" id="df-reveal">
+                <p id="df-message">At n=100, there's a small gap — 1.2% error. Easy to miss in simulation.</p>
+            </div>
+        </div>
+
+        <p>If you only tested at <code>n=300</code> (your "typical" experiment), you'd ship this bug. It would surface three months later when someone runs a pilot with <code>n=30</code> and their false positive rate is 8% instead of 5%.</p>
+
+        <p>The bug existed the whole time. Your simulation just didn't sample the region where it's visible.</p>
+
+        <h2>example 2: the ratio metric bug</h2>
+
+        <p>Here's a modeling bug: computing "mean of ratios" <code>E[X/Y]</code> instead of "ratio of means" <code>E[X]/E[Y]</code> for a metric like revenue per session.</p>
+        
+        <p>When denominators are well-behaved, they converge. But, when <code>Y</code> has high variance (especially when it can get close to zero), Jensen's inequality kicks in and <code>E[X/Y] ≠ E[X]/E[Y]</code> — the mean-of-ratios explodes.</p>
+
+        <p>In this example, the slider controls the denominator's <em>coefficient of variation</em> (CV) which is standard deviation divided by mean. Low CV means tight, predictable values (think: average order value in a mature product), high CV means wild spread (think: user-level CTR, where one user sees 1,000 ads and another sees just 1).</p>
+
+        <p>Drag the slider to increase denominator variance, and watch the methods diverge.</p>
+
+        <div class="interactive" id="ratio-bug">
+            <div class="interactive-title">the ratio metric bug</div>
+            <div class="interactive-subtitle">CV = std dev / mean. Low CV → tight values. High CV → wild spread, e.g., many near zero values.</div>
+
+            <div class="slider-container">
+                <label class="slider-label">denominator CV: <span id="ratio-var-value">0.1</span></label>
+                <input type="range" id="ratio-var-slider" min="10" max="200" value="10" step="10" class="sim-slider">
+                <div class="slider-markers">
+                    <span class="marker" style="left: 0%">Low variance</span>
+                    <span class="marker" style="left: 70%"><code></code>Y near zero</span>
+                </div>
+            </div>
+
+            <div class="comparison-chart" id="ratio-comparison">
+                <div class="comparison-row">
+                    <div class="comparison-label">ratio of means</div>
+                    <div class="comparison-bar-container">
+                        <div class="comparison-bar correct" id="ratio-rom-bar"></div>
+                        <span class="comparison-value" id="ratio-rom-value">1.00</span>
+                    </div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-label">mean of ratios</div>
+                    <div class="comparison-bar-container">
+                        <div class="comparison-bar buggy" id="ratio-mor-bar"></div>
+                        <span class="comparison-value" id="ratio-mor-value">1.00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ratio-detail" id="ratio-detail">
+                <div class="ratio-detail-row">
+                    <span class="ratio-detail-label">true ratio (<code>E[X]/E[Y]</code>):</span>
+                    <span class="ratio-detail-value" id="ratio-true-value">1.00</span>
+                    <span class="ratio-detail-note">what we want to estimate</span>
+                </div>
+                <div class="ratio-detail-row">
+                    <span class="ratio-detail-label">samples with <code>Y &lt; 0.1</code>:</span>
+                    <span class="ratio-detail-value" id="ratio-small-y">0%</span>
+                    <span class="ratio-detail-note">small denominators explode the ratio</span>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-label">Mean-of-ratios bias</div>
+                    <div class="stat-value" id="ratio-bias">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Divergence factor</div>
+                    <div class="stat-value" id="ratio-divergence">1.0x</div>
+                </div>
+            </div>
+
+            <div class="bug-reveal" id="ratio-reveal">
+                <p id="ratio-message">At CV=0.1, denominators are tight around 1.0. Both methods give ~1.0. The bug is invisible.</p>
+            </div>
+        </div>
+
+        <p>If your simulation used well-behaved denominators (low CV), both methods would pass validation. You'd only discover the bug when you hit a segment with high-variance session counts, and suddenly your metric is 2x inflated.</p>
+
+        <p>Same root cause: the simulation didn't sample the region where the bug manifests.</p>
+
+        <h2>finding the knobs</h2>
+
+        <p>The examples above make it look easy: just test at small n! Just crank up the CV! But that's hindsight. The hard part is figuring out <em>which parameters matter</em> before you've found the bug.</p>
+
+        <p>For the degrees of freedom bug, you need to know that degrees of freedom matter and that the t-distribution converges to normal as <code>df → ∞</code>. If you don't know that, you won't think to test small n.</p>
+
+        <p>For the ratio bug, you need to know that <code>E[1/Y]</code> blows up when Y can be small; that Jensen's inequality bites hardest when the denominator has high variance. If you don't know that, you won't think to test high-CV denominators.</p>
+
+        <p>This is why <strong>simulation suites are confessions of what you understand</strong>. You can only test failure modes you can imagine. The parameters you vary reveal the theory you have about how things break.</p>
+
+        <div class="callout">
+            <p>The question isn't just "did I test extreme values?" — it's "do I understand my method well enough to know which values are extreme?"</p>
+        </div>
+
+        <p>Some heuristics that help:</p>
+
+        <ul class="prose-list">
+            <li><strong>Asymptotic arguments:</strong> If your method relies on "n is large enough," test small n</li>
+            <li><strong>Denominators and inversions:</strong> If you're dividing by something, test when that something is near zero</li>
+            <li><strong>Independence assumptions:</strong> If you assume iid, test correlated data</li>
+            <li><strong>Distributional assumptions:</strong> If you assume normal, test heavy tails</li>
+            <li><strong>Correction terms:</strong> If there's a bias correction, test where the correction dominates</li>
+        </ul>
+
+        <p>But ultimately: you'll miss things. Every simulation suite has blind spots. That's why you also need empirical validation — A/A tests, coverage checks on historical experiments, sanity checks on production data. Simulation catches the bugs you imagined. Production catches the rest.</p>
+
+        
+        <h2>the meta-lesson</h2>
+
+        <p>I spent the last year transitioning from "tactile" ML work — training models, looking at predictions, debugging why this set of features resulted in that output — into building experimentation infrastructure. The feedback loops are completely different. In ML, you can <em>see</em> your model being wrong. In experimentation, you build systems that promise "95% coverage" and you never get to observe whether any individual experiment honored that promise.</p>
+
+        <p>The single biggest lesson: <strong>every bug I found in production was a DGP I didn't simulate.</strong></p>
+
+        <p>Not because I was lazy, but because I didn't <em>think to think</em> of it. I didn't know that parameter mattered. I didn't realize that assumption could be violated in that way. The simulation suite is a confession of what you understand about your method, and the gaps in your understanding are the bugs waiting to ship.</p>
+
+        <p>In this sense, a DGP suite is a living document. Every production bug you find is a new scenario to add. Every edge case you discover is a test to write. The suite grows as your understanding grows.</p>
+
+        <p>And remember: you only get one draw per experiment. You can't see your methodology failing in real-time. So you'd better be sure it's sound before you ship it.</p>
+
+        <footer>
+            <p>inception date: 2025-12-30</p>
+        </footer>
+    </div>
+
+
+    <script>
+        // ===== DEGREES OF FREEDOM BUG INTERACTIVE =====
+        
+        // t critical value lookup (two-tailed, 95%)
+        function tCritical(df) {
+            if (df >= 1000) return 1.960;
+            if (df >= 200) return 1.972;
+            if (df >= 100) return 1.984;
+            if (df >= 60) return 2.000;
+            if (df >= 40) return 2.021;
+            if (df >= 30) return 2.042;
+            if (df >= 25) return 2.060;
+            if (df >= 20) return 2.086;
+            if (df >= 15) return 2.131;
+            if (df >= 12) return 2.179;
+            if (df >= 10) return 2.228;
+            if (df >= 8) return 2.306;
+            if (df >= 6) return 2.447;
+            if (df >= 5) return 2.571;
+            if (df >= 4) return 2.776;
+            if (df >= 3) return 3.182;
+            if (df >= 2) return 4.303;
+            return 6.314;
+        }
+        
+        function updateDfBug() {
+            const dfSlider = document.getElementById('df-n-slider');
+            const dfNValue = document.getElementById('df-n-value');
+            const dfTBar = document.getElementById('df-t-bar');
+            const dfZBar = document.getElementById('df-z-bar');
+            const dfTValue = document.getElementById('df-t-value');
+            const dfZValue = document.getElementById('df-z-value');
+            const dfError = document.getElementById('df-error');
+            const dfCoverage = document.getElementById('df-coverage');
+            const dfReveal = document.getElementById('df-reveal');
+            const dfMessage = document.getElementById('df-message');
+            
+            const n = parseInt(dfSlider.value);
+            const df = 2 * n - 2;
+            
+            const tCrit = tCritical(df);
+            const zCrit = 1.960;
+            
+            dfNValue.textContent = n;
+            dfTValue.textContent = tCrit.toFixed(3);
+            dfZValue.textContent = zCrit.toFixed(3);
+            
+            // bar widths scaled to show difference clearly
+            const minCrit = 1.9;
+            const maxCrit = 2.5;
+            const scale = 100 / (maxCrit - minCrit);
+            dfTBar.style.width = Math.min(100, (tCrit - minCrit) * scale) + '%';
+            dfZBar.style.width = Math.min(100, (zCrit - minCrit) * scale) + '%';
+            
+            // error: how much narrower is the buggy CI?
+            const error = ((tCrit - zCrit) / tCrit * 100);
+            dfError.textContent = error.toFixed(1) + '%';
+            dfError.className = 'stat-value' + (error > 5 ? ' bad' : error > 2 ? ' warn' : ' good');
+            
+            // approximate actual coverage when using z instead of t
+            const actualCoverage = 95 - error * 0.6;
+            dfCoverage.textContent = actualCoverage.toFixed(1) + '%';
+            dfCoverage.className = 'stat-value' + (actualCoverage < 92 ? ' bad' : actualCoverage < 94 ? ' warn' : ' good');
+            
+            // message based on sample size
+            if (n >= 200) {
+                dfMessage.textContent = 'At n=' + n + ', the bug is invisible. ' + error.toFixed(1) + '% error, coverage ' + actualCoverage.toFixed(1) + '%. You would never notice.';
+                dfReveal.className = 'bug-reveal';
+            } else if (n >= 50) {
+                dfMessage.textContent = 'At n=' + n + ', there is a small gap. ' + error.toFixed(1) + '% error. A careful simulation might catch this.';
+                dfReveal.className = 'bug-reveal warning';
+            } else if (n >= 20) {
+                dfMessage.textContent = 'At n=' + n + ', the bug is visible. Your "95% CI" is actually ' + actualCoverage.toFixed(0) + '%. False positive rate is ' + (100 - actualCoverage).toFixed(0) + '% instead of 5%.';
+                dfReveal.className = 'bug-reveal warning';
+            } else {
+                dfMessage.textContent = 'At n=' + n + ', the bug is severe. ' + error.toFixed(0) + '% error. Coverage is ' + actualCoverage.toFixed(0) + '%. This breaks everything.';
+                dfReveal.className = 'bug-reveal danger';
+            }
+        }
+        
+        // ===== RATIO METRIC BUG INTERACTIVE =====
+        
+        // Box-Muller for normal random
+        function normalRandom() {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+        
+        // Generate lognormal with given mean and CV
+        function lognormalSample(mean, cv) {
+            // For lognormal: if X ~ LN(mu, sigma), then
+            // E[X] = exp(mu + sigma^2/2)
+            // CV = sqrt(exp(sigma^2) - 1)
+            // Solving: sigma^2 = ln(1 + cv^2)
+            const sigma2 = Math.log(1 + cv * cv);
+            const sigma = Math.sqrt(sigma2);
+            const mu = Math.log(mean) - sigma2 / 2;
+            return Math.exp(mu + sigma * normalRandom());
+        }
+        
+        function simulateRatioMetric(cv) {
+            const nSamples = 500;
+            const meanX = 1.0;  // numerator mean
+            const meanY = 1.0;  // denominator mean
+            const cvX = 0.3;    // numerator CV (fixed, moderate)
+            const cvY = cv;     // denominator CV (varies with slider)
+            
+            let sumX = 0, sumY = 0, sumRatios = 0;
+            let smallYCount = 0;
+            
+            for (let i = 0; i < nSamples; i++) {
+                const x = lognormalSample(meanX, cvX);
+                const y = lognormalSample(meanY, cvY);
+                
+                sumX += x;
+                sumY += y;
+                sumRatios += x / y;
+                
+                if (y < 0.1) smallYCount++;
+            }
+            
+            const ratioOfMeans = sumX / sumY;
+            const meanOfRatios = sumRatios / nSamples;
+            const trueRatio = meanX / meanY;  // = 1.0
+            const pctSmallY = (smallYCount / nSamples) * 100;
+            
+            return { 
+                ratioOfMeans: ratioOfMeans,
+                meanOfRatios: meanOfRatios,
+                trueRatio: trueRatio,
+                pctSmallY: pctSmallY
+            };
+        }
+        
+        function updateRatioBug() {
+            const ratioSlider = document.getElementById('ratio-var-slider');
+            const ratioVarValue = document.getElementById('ratio-var-value');
+            const ratioRomBar = document.getElementById('ratio-rom-bar');
+            const ratioMorBar = document.getElementById('ratio-mor-bar');
+            const ratioRomValue = document.getElementById('ratio-rom-value');
+            const ratioMorValue = document.getElementById('ratio-mor-value');
+            const ratioBias = document.getElementById('ratio-bias');
+            const ratioDivergence = document.getElementById('ratio-divergence');
+            const ratioReveal = document.getElementById('ratio-reveal');
+            const ratioMessage = document.getElementById('ratio-message');
+            const ratioTrueValue = document.getElementById('ratio-true-value');
+            const ratioSmallY = document.getElementById('ratio-small-y');
+            
+            const cvPct = parseInt(ratioSlider.value);
+            const cv = cvPct / 100;  // convert to decimal
+            
+            // Run multiple simulations and average
+            let romSum = 0, morSum = 0, smallYSum = 0;
+            const nSims = 50;
+            
+            for (let i = 0; i < nSims; i++) {
+                const result = simulateRatioMetric(cv);
+                romSum += result.ratioOfMeans;
+                morSum += result.meanOfRatios;
+                smallYSum += result.pctSmallY;
+            }
+            
+            const rom = romSum / nSims;
+            const mor = morSum / nSims;
+            const pctSmallY = smallYSum / nSims;
+            const trueRatio = 1.0;
+            
+            ratioVarValue.textContent = cv.toFixed(1);
+            ratioTrueValue.textContent = trueRatio.toFixed(2);
+            
+            ratioRomValue.textContent = rom.toFixed(2);
+            ratioMorValue.textContent = mor.toFixed(2);
+            ratioSmallY.textContent = pctSmallY.toFixed(0) + '%';
+            
+            // Bar widths - scale to show divergence
+            const maxBar = Math.max(rom, mor, trueRatio) * 1.1;
+            const minBar = Math.min(rom, mor, trueRatio) * 0.5;
+            const scale = 100 / (maxBar - minBar);
+            ratioRomBar.style.width = Math.max(10, (rom - minBar) * scale) + '%';
+            ratioMorBar.style.width = Math.max(10, (mor - minBar) * scale) + '%';
+            
+            // Bias: % difference from true ratio
+            const morBias = ((mor - trueRatio) / trueRatio * 100);
+            ratioBias.textContent = (morBias > 0 ? '+' : '') + morBias.toFixed(0) + '%';
+            ratioBias.className = 'stat-value' + (Math.abs(morBias) > 50 ? ' bad' : Math.abs(morBias) > 15 ? ' warn' : ' good');
+            
+            // Divergence factor: how many times larger is mean-of-ratios?
+            const divFactor = mor / rom;
+            ratioDivergence.textContent = divFactor.toFixed(1) + 'x';
+            ratioDivergence.className = 'stat-value' + (divFactor > 1.5 ? ' bad' : divFactor > 1.1 ? ' warn' : ' good');
+            
+            // Message
+            if (cv <= 0.3) {
+                ratioMessage.textContent = 'At CV=' + cv.toFixed(1) + ', denominators are tight. Both methods give ~1.0. The bug is invisible.';
+                ratioReveal.className = 'bug-reveal';
+            } else if (cv <= 1.0) {
+                ratioMessage.textContent = 'At CV=' + cv.toFixed(1) + ', some denominators are getting small. Mean-of-ratios is ' + morBias.toFixed(0) + '% biased.';
+                ratioReveal.className = 'bug-reveal warning';
+            } else {
+                ratioMessage.textContent = 'At CV=' + cv.toFixed(1) + ', ' + pctSmallY.toFixed(0) + '% of denominators are < 0.1. Mean-of-ratios is ' + divFactor.toFixed(1) + 'x the true value. Jensen inequality strikes.';
+                ratioReveal.className = 'bug-reveal danger';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const dfSlider = document.getElementById('df-n-slider');
+            if (dfSlider) {
+                dfSlider.addEventListener('input', updateDfBug);
+                updateDfBug();
+            }
+            
+            const ratioSlider = document.getElementById('ratio-var-slider');
+            if (ratioSlider) {
+                ratioSlider.addEventListener('input', updateRatioBug);
+                updateRatioBug();
+            }
+        });
+    </script>
+</body>
+</html>
