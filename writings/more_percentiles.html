@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>More percentiles, more precision?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#faf9f7; --bg-secondary:#f0eeeb; --bg-tertiary:#e8e6e2;
+  --text-primary:#1a1a1a; --text-secondary:#4a4a4a; --text-muted:#888580;
+  --accent:#8b5a2b; --accent-dim:#a67c52; --accent-glow:rgba(139,90,43,0.08);
+  --danger:#9b4444; --success:#4a7c4a; --code-bg:#eae8e4; --border:#d5d3cf;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:18px;scroll-behavior:smooth}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:'Newsreader',Georgia,serif;line-height:1.7;min-height:100vh}
+
+.top-nav{position:fixed;top:0;left:0;right:0;background:var(--bg-primary);border-bottom:1px solid var(--border);z-index:100;padding:.75rem 2rem}
+.top-nav-inner{max-width:680px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.top-nav-brand{font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--text-primary);text-decoration:none}
+.top-nav-brand:hover{color:var(--accent)}
+.top-nav-links{display:flex;gap:1.25rem}
+.top-nav-links a{font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:lowercase;letter-spacing:.05em;color:var(--text-muted);text-decoration:none;transition:color .2s ease}
+.top-nav-links a:hover,.top-nav-links a.active{color:var(--accent)}
+
+.container{max-width:680px;margin:0 auto;padding:6rem 2rem 8rem}
+header{margin-bottom:3rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.back-link{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);text-decoration:none;text-transform:lowercase;letter-spacing:.05em;display:inline-flex;align-items:center;gap:.35rem;margin-bottom:1.5rem;transition:color .2s ease}
+.back-link:hover{color:var(--accent)}
+.back-link::before{content:'←'}
+h1{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:400;letter-spacing:-.02em;margin-bottom:.75rem}
+.subtitle{font-family:'Newsreader',serif;font-style:italic;color:var(--text-secondary);font-size:1.1rem}
+.meta{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);margin-top:1.5rem;letter-spacing:.05em}
+
+p{margin-bottom:1.5rem;color:var(--text-secondary)}
+strong,b{color:var(--text-primary);font-weight:500}
+em{font-style:italic;color:var(--text-primary)}
+h2{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:500;text-transform:lowercase;color:var(--accent);letter-spacing:.1em;margin:4rem 0 1.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+h2::before{content:'/// ';color:var(--text-muted)}
+h3{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:500;text-transform:lowercase;color:var(--text-secondary);letter-spacing:.05em;margin:2rem 0 .75rem}
+ul{margin:0 0 1.5rem 1.1rem;color:var(--text-secondary)}
+li{margin-bottom:.6rem}
+
+.callout{background:var(--accent-glow);border-left:2px solid var(--accent);padding:1.25rem 1.5rem;margin:2rem 0;border-radius:0 4px 4px 0}
+.callout p{margin-bottom:.75rem;color:var(--text-primary);font-size:.95rem}
+.callout p:last-child{margin-bottom:0}
+.callout-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;text-transform:lowercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.6rem}
+
+code{font-family:'JetBrains Mono',monospace;font-size:.85em;background:var(--code-bg);padding:.15em .4em;border-radius:3px;color:var(--accent)}
+pre{background:var(--code-bg);border-radius:4px;padding:1rem 1.25rem;margin:1.5rem 0;overflow-x:auto}
+pre code{background:none;padding:0;color:var(--text-secondary);font-size:.8rem}
+
+table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:.75rem;margin:1.5rem 0}
+th{text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--border);color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.08em;font-size:.65rem}
+td{text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--border);color:var(--text-secondary)}
+td:first-child{color:var(--text-primary)}
+td .good{color:var(--success)}
+td .bad{color:var(--danger)}
+
+/* interactive */
+.interactive{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:2rem;margin:3rem 0;position:relative}
+.interactive::before{content:'interactive';position:absolute;top:-.6rem;left:1rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);background:var(--bg-tertiary);padding:0 .5rem}
+.interactive-title{font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--text-primary);margin-bottom:1rem;text-transform:lowercase}
+.interactive-prompt{color:var(--text-secondary);font-size:.95rem;margin-bottom:1.5rem}
+
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem 1.5rem;margin-bottom:1.5rem}
+.control label{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);display:flex;justify-content:space-between;gap:.5rem;margin-bottom:.4rem;text-transform:lowercase}
+.control .val{color:var(--accent)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--border);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg-tertiary)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg-tertiary)}
+input[type=range]:focus-visible{outline:1px solid var(--accent);outline-offset:4px}
+.toggle{display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.toggle button{flex:1;background:transparent;border:0;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.4rem;color:var(--text-muted);transition:all .2s ease}
+.toggle button:hover{color:var(--text-primary)}
+.toggle button.on{background:var(--accent);color:var(--bg-primary)}
+
+.histogram-container{background:var(--code-bg);border-radius:4px;padding:1.5rem;margin-bottom:1.5rem}
+.histogram{display:flex;align-items:flex-end;justify-content:space-between;height:120px;gap:3px}
+.histogram-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-width:0;transition:background .2s ease}
+.histogram-bar.out{background:var(--accent-dim);opacity:.32}
+.histogram-bar:hover{background:var(--text-primary);opacity:1}
+.histogram-labels{display:flex;justify-content:space-between;margin-top:.5rem}
+.histogram-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text-muted)}
+.histogram-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem}
+.histogram-cell{min-width:0}
+.histogram-cell .histogram{height:96px;gap:1px}
+.histogram-cell-label{text-align:center;margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted)}
+.cell-claim{text-align:center;font-family:'JetBrains Mono',monospace;font-size:.62rem;line-height:1.6;margin-top:.3rem;color:var(--text-muted)}
+.cell-claim b{color:var(--accent);font-weight:500}
+.cell-claim i{color:var(--danger);font-style:normal}
+
+/* checklist panel */
+.checklist{display:grid;grid-template-columns:1.5fr 1fr 1fr;background:var(--code-bg);border-radius:4px;overflow:hidden;font-family:'JetBrains Mono',monospace;font-size:.72rem;margin:1.5rem 0}
+.checklist > div{padding:.5rem .7rem;border-bottom:1px solid var(--border);color:var(--text-secondary)}
+.checklist .hd{color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;font-size:.58rem;line-height:1.4;background:var(--bg-tertiary)}
+.checklist .tick{text-align:center;color:var(--accent)}
+.checklist .r{text-align:center}
+.checklist .last > div,.checklist .last{border-bottom:none}
+.checklist .sum{background:var(--bg-tertiary);color:var(--text-primary);border-bottom:none}
+.checklist .sum.big{color:var(--danger)}
+.static-fig{background:var(--code-bg);border-radius:4px;padding:1.25rem;margin:1.5rem 0}
+.static-fig svg{display:block;width:100%;height:auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.stat-k{display:block;font-family:'JetBrains Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.3rem;line-height:1.4}
+.stat-v{font-family:'JetBrains Mono',monospace;font-size:1.15rem;color:var(--text-primary)}
+.stat-v.acc{color:var(--accent)}
+.stat-v.bad{color:var(--danger)}
+figure{margin:0}
+figure svg{display:block;width:100%;height:auto;background:var(--code-bg);border-radius:4px}
+.fig-note{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-muted);line-height:1.7;margin-top:.9rem}
+
+details{background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;margin:1.5rem 0}
+summary{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-muted);padding:1rem 1.25rem;cursor:pointer;list-style:none;transition:color .2s ease}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'+ ';color:var(--accent)}
+details[open] summary::before{content:'− '}
+summary:hover{color:var(--text-primary)}
+details > div{padding:1rem 1.25rem 1.25rem;color:var(--text-secondary);font-size:.95rem;border-top:1px solid var(--border)}
+details ul{margin-bottom:0}
+
+hr{border:none;border-top:1px solid var(--border);margin:3rem 0}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s ease}
+a:hover{border-bottom-color:var(--accent)}
+blockquote{border-left:2px solid var(--accent);padding-left:1.25rem;margin:2rem 0;font-style:italic;color:var(--text-primary);font-size:1.05rem}
+footer{margin-top:4rem;padding-top:2rem;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);line-height:1.85}
+
+@media (max-width:600px){
+  html{font-size:16px}
+  .top-nav{padding:.75rem 1.25rem}.top-nav-links{gap:.75rem}.top-nav-links a{font-size:.65rem}
+  .container{padding:5rem 1.25rem 4rem}
+  h1{font-size:1.5rem}
+  .interactive{padding:1.25rem}
+  .histogram{height:100px;gap:2px}
+  .histogram-grid{grid-template-columns:1fr;gap:1.5rem}
+  .histogram-cell .histogram{height:76px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+::selection{background:var(--accent);color:var(--bg-primary)}
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <div class="top-nav-inner">
+    <a href="/" class="top-nav-brand">Rizka Azmira</a>
+    <div class="top-nav-links">
+      <a href="/">home</a><a href="/about.html">about</a>
+      <a href="/" class="active">writing</a><a href="/art.html">art</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+<header>
+  <a href="/" class="back-link">back to home</a>
+  <h1>More percentiles, more precision?</h1>
+  <p class="subtitle">On why a more granular wealth ranking can expose uncertainty rather than eliminate it</p>
+</header>
+
+<p>There's a small statistical argument hiding underneath the current Indonesian discourse about desil kesejahteraan.</p>
+
+<p>A lot of people are understandably annoyed that two households with wildly different financial lives can end up in the same desil. One viral post: someone renting a type-36 house with one used car, officially ranked in the top 20% of the country.</p>
+
+<p>BPS answered honestly. Desil is a <em>ranking</em>, not a rupiah cut-off. Desil 10 holds conglomerates and people still paying off a KPR. That gap <strong>is</strong> the inequality.</p>
+
+<p>The most upvoted reply: fine, then stop using 10 buckets. Use 100. Give us percentiles.</p>
+
+<p>Sounds better. More precise. And possibly completely fake precision.</p>
+
+<div class="callout">
+  <div class="callout-label">the argument</div>
+  <p>Two different complaints are being said in one breath. Percentiles only address one of them, and only on paper.</p>
+  <p>Cutting finer doesn't add information. It adds digits. The underlying score is exactly as wrong as it was before — you've just printed more of it.</p>
+</div>
+
+<hr>
+
+<h2>two complaints wearing one costume</h2>
+
+<table>
+<thead><tr><th>complaint</th><th>content</th><th>what it's actually about</th></tr></thead>
+<tbody>
+<tr><td>A</td><td>"i'm in the same box as conglomerates"</td><td>heterogeneity <em>within</em> the box</td></tr>
+<tr><td>B</td><td>"i'm not supposed to be in <em>this</em> box"</td><td>placing within boxes' <em>accuracy</em></td></tr>
+</tbody>
+</table>
+
+<p>These feel like one grievance. They are not, and the difference is the whole post.</p>
+
+<p><strong>A is about the width of the box.</strong> Even if the system sorted everyone perfectly, desil 10 would still span a range so wide the label barely means anything. That's a design complaint, and it's correct.</p>
+
+<p><strong>B is about whether you were sorted into the right box at all.</strong> This has nothing to do with how wide the box is. It's about whether the score used to sort you knows anything about you.</p>
+
+<p>Here's the hidden assumption. Almost everyone demanding percentiles is <em>feeling</em> B and <em>prescribing a fix for</em> A. "I'm not rich" is a claim about placement. "Give us 100 buckets" is a remedy for width.</p>
+
+<p>And the two trade against each other. More buckets means narrower boxes (A improves) and a much lower chance of landing in the right one (B gets worse). Nobody has priced that trade, so let's price it.</p>
+
+<p>There's a second assumption underneath the first: that granularity and accuracy are the same knob. They aren't. Granularity is free — you can slice a ranking as finely as you like at no cost. Accuracy costs money: better data, more groundcheck, administrative record linkage. Which is precisely why the free one is the one being proposed.</p>
+
+<h2>the intuition</h2>
+
+<p>Suppose there is such a thing as a household's <em>true</em> position. We don't observe it. Instead the state builds a score out of imperfect socioeconomic signals — house, vehicle, job, what's in the living room. Proxy means testing.</p>
+
+<pre><code>observed score = true position + measurement error</code></pre>
+
+<p>The estimate doesn't need to be perfect to be useful. But we do need to know <b>how much resolution it can support</b>. I'll parameterize score quality as <strong>R²</strong>: the share of the score that is genuinely signal. Let's keep in mind that PMT literature pegs Indonesian's model's R² to somewhere around 0.4–0.6.</p>
+
+<details>
+<summary>what the gini slider is doing</summary>
+<div>
+<p>Gini here isn't a fact about Indonesia — it's a dial on the synthetic population, setting how unequally welfare is spread before anyone measures it. Indonesia's consumption Gini runs around 0.38, hence the default. The slider sets the Gini of the lognormal body; the Pareto tail adds more on top, so the <strong>realized Gini</strong> reported next to the first chart is higher. That's the one to read.</p>
+<p>Dragging it does something non-obvious. Measurement error is fixed in log units, so a more spread-out population has a better signal-to-noise ratio — R² climbs without touching the error slider. <strong>A more unequal country is easier to rank.</strong> Which cuts against Indonesia here: the middle is crowded, and at that density a small error moves you several desil. Desil 5 versus desil 7 might be one motorbike.</p>
+</div>
+</details>
+
+<h2>does slicing even fix complaint A?</h2>
+
+<p>Before pricing the trade, check whether percentiles deliver the thing they're supposed to deliver.</p>
+
+<p>The population below is lognormal with a Pareto tail spliced onto the top 5%, because real wealth has a far fatter top than is modeled by lognormal distribution. Median anchored at Rp 1,5jt per capita per month. Look at the spread <em>inside</em> the top box, at three box sizes.</p>
+
+<div class="interactive">
+  <div class="interactive-title">spread inside the top box</div>
+  <p class="interactive-prompt">Each bar is the p10–p90 range of actual expenditure among households in that slice. Log scale.</p>
+  <div class="controls">
+    <div class="control"><label>gini (body) <span class="val" id="v-g1">0.38</span></label><input type="range" id="s-g1" min="0.25" max="0.60" step="0.01" value="0.38"></div>
+    <div class="control"><label>pareto α (lower = fatter) <span class="val" id="v-a1">1.6</span></label><input type="range" id="s-a1" min="1.1" max="3.5" step="0.1" value="1.6"></div>
+    <div class="control"><label>top tail <span class="val"></span></label>
+      <div class="toggle" id="t-tail"><button data-v="1" class="on">pareto</button><button data-v="0">lognormal</button></div></div>
+  </div>
+  <figure><svg id="fig-tail" viewBox="0 0 640 200" role="img" aria-label="Spread of expenditure inside the top 10, 1 and 0.1 percent"></svg></figure>
+  <p class="fig-note">brown bar = p10–p90 inside the slice · vertical mark = median · thin line = reach to p99</p>
+  <div class="stats">
+    <div><span class="stat-k">spread in top 10%</span><span class="stat-v" id="k-r10">—</span></div>
+    <div><span class="stat-k">spread in top 1%</span><span class="stat-v" id="k-r1">—</span></div>
+    <div><span class="stat-k">spread in top 0.1%</span><span class="stat-v" id="k-r01">—</span></div>
+    <div><span class="stat-k">realized gini</span><span class="stat-v acc" id="k-gr">—</span></div>
+  </div>
+</div>
+
+<p>The ratios barely move. You slice a hundred times narrower in headcount and the inequality inside <em>goes up</em>.</p>
+
+<p>That's not a simulation artifact, it's what Pareto does. Zoom into the tail and you get another Pareto with the same shape. <strong>Inequality at the top is fractal.</strong> Percentile 100 still holds someone at Rp 11jt and someone at Rp 44jt, with hundreds of millions out past the edge.</p>
+
+<p>Turn the tail off and the ratios shrink nicely — because you've now modelled a country with no rich people. The complaint disappears because you deleted a property of reality.</p>
+
+<p>So complaint A is real, and percentiles fix it only on paper.</p>
+
+<p>The obvious remedy is <em>unequal</em> buckets: keep desil 1–9, then split desil 10 into p90–99, p99–99.9, p99.9+. Cut coarse where the crowd is, fine where the spread is. Hold that thought — it assumes something neither complaint can support. I'll come back to it once we address complaint B properly.</p>
+
+<h2>complaint B, made palpable</h2>
+
+<p>Take one household. The model scores it around the 73rd percentile. Under each labelling scheme it gets a different name for the same score: kuintil 4, desil 8, or persentil 74.</p>
+
+<p>Below, for each scheme, I take <em>everyone</em> who received that label and plot where they actually are. The brown region is the slice of the distribution the label promises. The pale region is everyone else who got the same label.</p>
+
+<div class="interactive">
+  <div class="interactive-title">same score, three labels</div>
+  <p class="interactive-prompt">Watch the promise shrink from 20 points to 1. Then watch the histogram underneath it not change.</p>
+  <div class="controls">
+    <div class="control"><label>gini <span class="val" id="v-g2">0.38</span></label><input type="range" class="sync" data-bind="gini" min="0.25" max="0.60" step="0.01" value="0.38"></div>
+    <div class="control"><label>measurement error <span class="val" id="v-n2">0.60</span></label><input type="range" class="sync" data-bind="noise" min="0.10" max="1.20" step="0.05" value="0.60"></div>
+    <div class="control"><label>household scored at <span class="val" id="v-t2">P73</span></label><input type="range" id="s-target" min="5" max="95" step="1" value="73"></div>
+  </div>
+  <div class="histogram-container">
+    <div class="histogram-grid" id="grid-three"></div>
+  </div>
+  <div class="stats">
+    <div><span class="stat-k">score quality (R²)</span><span class="stat-v acc" id="k-r2">—</span></div>
+    <div><span class="stat-k">correct kuintil</span><span class="stat-v" id="k-a5">—</span></div>
+    <div><span class="stat-k">correct desil</span><span class="stat-v" id="k-a10">—</span></div>
+    <div><span class="stat-k">correct persentil</span><span class="stat-v bad" id="k-a100">—</span></div>
+  </div>
+</div>
+
+<p>This is the whole argument in one picture. The label narrows twentyfold. The reality underneath it is identical — same shape, same width, same everything. All three histograms are the same distribution, because all three come from the same score.</p>
+
+<p>At the default settings, "persentil 74" means <strong>your true position is 80% likely to be somewhere between P33 and P92</strong>. A label one point wide, describing a reality sixty points wide.</p>
+
+<table>
+<thead><tr><th>scheme</th><th>label claims</th><th>actually delivers</th><th>correct bucket</th></tr></thead>
+<tbody>
+<tr><td>kuintil (5)</td><td>20 pts</td><td>56 pts</td><td><span class="good">44%</span></td></tr>
+<tr><td>desil (10)</td><td>10 pts</td><td>54 pts</td><td>26%</td></tr>
+<tr><td>persentil (100)</td><td>1 pt</td><td>59 pts</td><td><span class="bad">3.6%</span></td></tr>
+</tbody>
+</table>
+
+<p>And that floor is the thing to notice: it doesn't move when you add buckets. It's set by the measurement error, not by how you choose to slice. <strong>Complaint B is not fixable by relabelling.</strong> It's fixable by improving the score.</p>
+
+<p>The number "74" has two digits. The measurement does not have two-digit precision. Nobody writes 3.847619 grams off a scale that reads to 0.1g. Extra digits don't add knowledge — they move the burden onto whoever believes them.</p>
+
+<h2>so is the score useless?</h2>
+
+<p>No, and it's worth being precise about what it does know. A noisy score can preserve the broad ordering of households while being terrible at assigning them to small boxes.</p>
+
+<div class="interactive">
+  <div class="interactive-title">true position vs estimated position</div>
+  <p class="interactive-prompt">Each dot is a household. The diagonal is a perfect system.</p>
+  <div class="controls">
+    <div class="control"><label>gini <span class="val" id="v-g3">0.38</span></label><input type="range" class="sync" data-bind="gini" min="0.25" max="0.60" step="0.01" value="0.38"></div>
+    <div class="control"><label>measurement error <span class="val" id="v-n3">0.60</span></label><input type="range" class="sync" data-bind="noise" min="0.10" max="1.20" step="0.05" value="0.60"></div>
+  </div>
+  <figure><svg id="fig-scatter" viewBox="0 0 640 330" role="img" aria-label="Scatter of true against estimated percentile"></svg></figure>
+  <div class="stats">
+    <div><span class="stat-k">rank correlation</span><span class="stat-v acc" id="k-rho">—</span></div>
+    <div><span class="stat-k">median rank error</span><span class="stat-v" id="k-mae">—</span></div>
+    <div><span class="stat-k">off by 20+ points</span><span class="stat-v bad" id="k-far">—</span></div>
+  </div>
+</div>
+
+<p>The cloud clearly slopes upward. The score is informative about <em>rank</em>. It is not informative about <em>position</em>. Those are different claims, and only one of them gets printed on your DTSEN result.</p>
+
+<p>Which points at the one job this instrument can nearly do. Not "which of a hundred boxes are you in," but "which side of a line are you on." So let's ask it that. Suppose a program covers the bottom 40%.</p>
+
+<div class="interactive">
+  <div class="interactive-title">probability of being classified eligible</div>
+  <p class="interactive-prompt">For households at each true position, how often the model lets them in. A perfect system would be a vertical cliff.</p>
+  <div class="controls">
+    <div class="control"><label>program covers bottom <span class="val" id="v-cut">40%</span></label><input type="range" id="s-cut" min="10" max="80" step="5" value="40"></div>
+    <div class="control"><label>measurement error <span class="val" id="v-n5">0.60</span></label><input type="range" class="sync" data-bind="noise" min="0.10" max="1.20" step="0.05" value="0.60"></div>
+  </div>
+  <figure><svg id="fig-cut" viewBox="0 0 640 300" role="img" aria-label="Probability of being classified eligible by true position"></svg></figure>
+  <div class="stats">
+    <div><span class="stat-k">truly eligible, wrongly excluded</span><span class="stat-v bad" id="k-excl">—</span></div>
+    <div><span class="stat-k">recipients who shouldn't qualify</span><span class="stat-v bad" id="k-incl">—</span></div>
+    <div><span class="stat-k">coin-flip zone</span><span class="stat-v" id="k-grey">—</span></div>
+  </div>
+</div>
+
+<p>Two things follow.</p>
+
+<p><strong>The exclusion and inclusion error rates are identical.</strong> Not a coincidence. If the program takes exactly the bottom 40% by estimated score, and 40% of households are truly eligible, then every household wrongly let in has displaced exactly one wrongly kept out. Tightening eligibility doesn't reduce error. It relabels who absorbs it.</p>
+
+<p>And <strong>the boundary is a band</strong>. There's a stretch of the distribution where eligibility is close to a coin flip, and no number of extra decimal places will change that. So the useful question was never "can we tell P38 from P39?" It's "can we reliably tell which side of the boundary a household is on?" — answered by the quality of the score, not the fineness of the labels.</p>
+
+<h2>so, can we even see inside the top?</h2>
+
+<p>Now back to that remedy. Splitting desil 10 into p90–99, p99–99.9, p99.9+ sounds like it answers complaint A without pretending we can tell P43 from P44. It assumes we can see well enough at the top to place people there. Look at how the score is actually built and that assumption falls apart.</p>
+
+<p>An enumerator walks through the house with a checklist. Every item on it is a <strong>bounded</strong> variable — you either own a car or you don't — and a top-decile household has already ticked all of them.</p>
+
+<div class="checklist">
+  <div class="hd">enumerator's checklist</div>
+  <div class="hd r">household A<br>doctor, KPR</div>
+  <div class="hd r">household B<br>owns four companies</div>
+  <div>owns the house</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div>owns a car</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div>refrigerator</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div>water heater</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div>air conditioning</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div>floor not dirt</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div>formal employment</div><div class="tick">✓</div><div class="tick">✓</div>
+  <div class="sum">resulting PMT score</div><div class="sum r">identical</div><div class="sum r">identical</div>
+  <div class="sum">actual expenditure</div><div class="sum big r">Rp 12jt</div><div class="sum big r">Rp 900jt</div>
+</div>
+
+<p>The list runs out of boxes to tick long before wealth runs out of room to grow. Financial wealth — which is where essentially all of the difference between these two households lives — leaves no trace in the living room. The instrument saturates.</p>
+
+<p>Below is the same simulation run twice: once with a score that keeps discriminating all the way up, and once where the signal above p90 is compressed to a fifth of its range, a crude stand-in for a checklist running out.</p>
+
+<div class="static-fig">
+  <svg id="fig-ceil" viewBox="0 0 640 236" role="img" aria-label="Share of each top slice correctly placed, with and without a saturating score"></svg>
+</div>
+
+<p>The overall R² barely flinches — 0.60 to 0.52, the kind of movement you'd never notice on a model card. But the share of the true top 0.1% that lands in the top 0.1% falls from 60% to <strong>13%</strong>, and the rank correlation <em>inside</em> desil 10 collapses from 0.41 to <strong>0.14</strong>.</p>
+
+<p>That last number is the one a p99 / p99.9 split would depend on, and at 0.14 the ordering within desil 10 is very nearly arbitrary. You'd be assigning a household to "the top 0.1%" on the strength of a coin.</p>
+
+<div class="callout">
+  <p>So the fix for complaint A isn't unequal buckets either. Splitting desil 10 is the right instinct in the wrong order: it's a claim about your <em>data</em> dressed up as a claim about your <em>categories</em>.</p>
+  <p>And notice the shape of the failure. The aggregate metric stays healthy while the specific thing you wanted to do becomes impossible. You cannot see this from headline accuracy — only by asking the score a question about the exact region you intend to cut.</p>
+</div>
+
+<p>This also disposes of a comforting reading of the earlier charts. Desil 1 and desil 10 score better on exact-match accuracy than desil 5, which looks like evidence the tails are well measured. They aren't — that's an edge effect, since at the boundary of a bounded scale you can only be wrong in one direction. Being sorted reliably <em>into</em> the top decile is a completely different claim from being sorted reliably <em>within</em> it.</p>
+
+<p>Which leaves complaint A and complaint B with the same answer, and it isn't a labelling scheme.</p>
+
+<h2>percentile doesn't create information</h2>
+
+<p>Ten categories feel crude. One hundred feel sophisticated. But the number of labels is not the amount of information.</p>
+
+<p>If the underlying measurement is noisy, adding categories simply turns <em>"you're probably in the upper-middle part of the distribution"</em> into <em>"you are P74."</em></p>
+
+<p>The second looks more scientific. It contains exactly the same information — arguably less, because now everyone can argue about whether someone is really P73, P74 or P75 when the model cannot tell.</p>
+
+<h2>so should indonesia use percentiles?</h2>
+
+<p>Not necessarily. I'm not arguing ten desils are optimal. They might be too coarse. They might be right. They might be arbitrary.</p>
+
+<p>The point is that <strong>granularity should be chosen from the precision of the underlying estimate and the decision being made with it.</strong> Three things follow:</p>
+
+<ul>
+<li><strong>Resolution before granularity.</strong> Any finer cut — at the top or anywhere else — is a claim that the score can separate the things being cut apart. Demonstrate that first, for that specific region, then print the label. A checklist-based score cannot currently separate p99 from p99.9, so a bucket boundary there would be decorative.</li>
+<li><strong>If you want to resolve the top, change the instrument.</strong> Not a finer slice of the same checklist — a different measurement entirely, of the kind that can see financial wealth. That is a data-access and political question, not a statistics question, and it should be argued for on those terms rather than smuggled in as a labelling reform.</li>
+<li><strong>Decision boundaries where the model can see.</strong> If a policy needs a line, put it where the score is confident.</li>
+</ul>
+
+<h2>one final thought</h2>
+
+<blockquote>A ranking is not a measurement. It's a measurement passed through a sorting function.</blockquote>
+
+<p>And sorting doesn't remove uncertainty. It just hides it behind an ordered list.</p>
+
+<details>
+<summary>expand: when this take doesn't apply</summary>
+<div>
+<ul>
+<li><strong>If R² is genuinely high.</strong> Everything here is driven by an assumed score quality. Push the noise slider down and desil becomes reliable. If BPS has validation numbers beating the PMT literature, my conclusion moves — the sliders exist so you can swap my assumption for yours.</li>
+<li><strong>For research, not targeting.</strong> Percentile-level data is fine for studying a distribution in aggregate, where errors average out. It breaks when you attach consequences to one household's label. Aggregation forgives. Eligibility doesn't.</li>
+<li><strong>A noisy sort still beats no sort.</strong> 26% correct sounds terrible until you compare it to allocating bansos by whoever reaches the kelurahan first. Not a broken system. Just not a precise one, and it shouldn't be sold as one.</li>
+</ul>
+</div>
+</details>
+
+<footer>
+<p>method: synthetic lognormal welfare with a pareto tail spliced at p95; sigma derived from gini via G = 2Φ(σ/√2) − 1. observed score = true position + gaussian noise, specified in log units and held fixed as gini moves — which is why score quality changes when you drag the inequality slider. a more unequal population is easier to rank. buckets are equal-count cuts on the rank of the estimated score, the actual definition of a desil, not a rupiah threshold. 40,000 households, fixed seed.</p>
+<p>credits: thanks Claude-kun as always.</p>
+<p>inception date: 2026-08-15</p>
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var N=40000, MED=1.5e6;
+var C={accent:'#8b5a2b',dim:'#a67c52',danger:'#9b4444',muted:'#888580',border:'#d5d3cf',ink:'#1a1a1a',code:'#eae8e4'};
+var MONO="'JetBrains Mono', monospace";
+function g(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+/* ---- rng + stats ---- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function normals(n,seed){var r=mulberry32(seed),o=new Float64Array(n);
+  for(var i=0;i<n;i+=2){var u=Math.max(r(),1e-12),v=r(),m=Math.sqrt(-2*Math.log(u));
+    o[i]=m*Math.cos(2*Math.PI*v); if(i+1<n)o[i+1]=m*Math.sin(2*Math.PI*v)} return o}
+function qnorm(p){
+  var a=[-3.969683028665376e1,2.209460984245205e2,-2.759285104469687e2,1.383577518672690e2,-3.066479806614716e1,2.506628277459239],
+      b=[-5.447609879822406e1,1.615858368580409e2,-1.556989798598866e2,6.680131188771972e1,-1.328068155288572e1],
+      c=[-7.784894002430293e-3,-3.223964580411365e-1,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+      d=[7.784695709041462e-3,3.224671290700398e-1,2.445134137142996,3.754408661907416],pl=.02425,q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+  if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+  q=p-.5;r=q*q;
+  return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
+function sigmaFromGini(x){return Math.SQRT2*qnorm((1+x)/2)}
+function ranks(v){var n=v.length,idx=new Array(n),i;
+  for(i=0;i<n;i++)idx[i]=i;
+  idx.sort(function(a,b){return v[a]-v[b]});
+  var r=new Float64Array(n);
+  for(i=0;i<n;i++)r[idx[i]]=(i+.5)/n;
+  return r}
+function quant(s,p){var n=s.length,h=(n-1)*p,lo=Math.floor(h);
+  return s[lo]+(h-lo)*(s[Math.min(lo+1,n-1)]-s[lo])}
+
+var Z1=normals(N,20260815), Z2=normals(N,99118822), Z3=normals(N,4242);
+
+function makeY(gini,alpha,tail){
+  var s=sigmaFromGini(gini), y=new Float64Array(N), i;
+  for(i=0;i<N;i++)y[i]=s*Z1[i];
+  if(tail){
+    var thr=s*qnorm(0.95);
+    for(i=0;i<N;i++) if(y[i]>thr){
+      var u=Math.abs(Z3[i])%1; if(!u)u=.5;
+      y[i]=thr+Math.log(1/(1-0.999*u))/alpha;
+    }
+  }
+  return {y:y,sigma:s}
+}
+function giniOf(y){var v=new Float64Array(N),i;
+  for(i=0;i<N;i++)v[i]=Math.exp(y[i]);
+  v.sort(); var c=0,t=0;
+  for(i=0;i<N;i++){t+=v[i];c+=(i+1)*v[i]}
+  return 2*c/(N*t)-(N+1)/N}
+function rupiah(v){
+  if(v>=1e9)return (v/1e9).toFixed(1)+'M';
+  if(v>=1e6)return (v/1e6).toFixed(v>=1e7?0:1)+'jt';
+  return Math.round(v/1e3)+'rb'}
+
+/* ---- svg helpers ---- */
+function txt(x,y,s,o){o=o||{};
+  return '<text x="'+x+'" y="'+y+'" font-family="'+MONO+'" font-size="'+(o.size||10)+'" fill="'+(o.fill||C.muted)+'"'
+    +' text-anchor="'+(o.anchor||'start')+'"'+(o.rot?' transform="rotate('+o.rot+' '+x+' '+y+')"':'')+'>'+esc(s)+'</text>'}
+function line(x1,y1,x2,y2,o){o=o||{};
+  return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(o.stroke||C.border)+'" stroke-width="'+(o.w||1)+'"'
+    +(o.dash?' stroke-dasharray="'+o.dash+'"':'')+' stroke-linecap="round"/>'}
+function path(d,o){o=o||{};
+  return '<path d="'+d+'" fill="'+(o.fill||'none')+'" stroke="'+(o.stroke||'none')+'" stroke-width="'+(o.w||1.6)+'" stroke-linejoin="round" stroke-linecap="round"'+(o.op?' opacity="'+o.op+'"':'')+'/>'}
+function rect(x,y,w,h,o){o=o||{};
+  return '<rect x="'+x+'" y="'+y+'" width="'+Math.max(w,0)+'" height="'+Math.max(h,0)+'" fill="'+(o.fill||'none')+'"'
+    +(o.stroke?' stroke="'+o.stroke+'" stroke-width="'+(o.w||1)+'"':'')+(o.op?' opacity="'+o.op+'"':'')+(o.r?' rx="'+o.r+'"':'')+'/>'}
+
+/* ================= state ================= */
+var S={gini:0.38, noise:0.60, alpha:1.6, tail:true, target:73, cut:40};
+var CACHE={};
+function population(){
+  var key=S.gini+'|'+S.noise;
+  if(CACHE.key===key) return CACHE.v;
+  var W=makeY(S.gini,1.6,true), y=W.y, ob=new Float64Array(N), i;
+  for(i=0;i<N;i++) ob[i]=y[i]+S.noise*Z2[i];
+  var TR=ranks(y), OB=ranks(ob);
+  var my=0,mo=0;
+  for(i=0;i<N;i++){my+=y[i];mo+=ob[i]} my/=N;mo/=N;
+  var sy=0,so=0,syo=0;
+  for(i=0;i<N;i++){var p=y[i]-my,q=ob[i]-mo;sy+=p*p;so+=q*q;syo+=p*q}
+  var R2=(syo/Math.sqrt(sy*so)); R2=R2*R2;
+  /* top-tail diagnostics: can the score resolve inside the slice, not just into it */
+  function share(f){var tot=0,hit=0;
+    for(var j=0;j<N;j++) if(TR[j]>=1-f){tot++; if(OB[j]>=1-f)hit++}
+    return hit/tot}
+  var tt=[],oo=[];
+  for(i=0;i<N;i++) if(TR[i]>=0.9){tt.push(TR[i]);oo.push(OB[i])}
+  var n2=tt.length,mt=0,mo2=0;
+  for(i=0;i<n2;i++){mt+=tt[i];mo2+=oo[i]} mt/=n2;mo2/=n2;
+  var st=0,so2=0,sto=0;
+  for(i=0;i<n2;i++){var u=tt[i]-mt,v=oo[i]-mo2;st+=u*u;so2+=v*v;sto+=u*v}
+  var within=sto/Math.sqrt(st*so2);
+  CACHE={key:key,v:{TR:TR,OB:OB,R2:R2,within:within,
+    s10:share(0.10),s1:share(0.01),s01:share(0.001)}};
+  return CACHE.v;
+}
+
+function accuracy(TR,OB,k){var c=0;
+  for(var i=0;i<N;i++) if(Math.floor(TR[i]*k)===Math.floor(OB[i]*k))c++;
+  return c/N}
+
+/* ================= fig 1: tail spread ================= */
+function drawTail(){
+  g('v-g1').textContent=S.gini.toFixed(2);
+  g('v-a1').textContent=S.alpha.toFixed(1);
+  var W=makeY(S.gini,S.alpha,S.tail), y=W.y;
+  g('k-gr').textContent=giniOf(y).toFixed(3);
+  var sorted=Float64Array.from(y); sorted.sort();
+  var slices=[{f:.10,n:'top 10%'},{f:.01,n:'top 1%'},{f:.001,n:'top 0.1%'}];
+  var R=slices.map(function(sl){
+    var sub=sorted.subarray(Math.floor(N*(1-sl.f)));
+    return {n:sl.n,
+      p10:Math.exp(quant(sub,.10))*MED, p50:Math.exp(quant(sub,.50))*MED,
+      p90:Math.exp(quant(sub,.90))*MED, p99:Math.exp(quant(sub,.99))*MED,
+      ratio:Math.exp(quant(sub,.90)-quant(sub,.10))};
+  });
+  g('k-r10').textContent=R[0].ratio.toFixed(1)+'\u00d7';
+  g('k-r1').textContent=R[1].ratio.toFixed(1)+'\u00d7';
+  g('k-r01').textContent=R[2].ratio.toFixed(1)+'\u00d7';
+
+  var L=76,Rt=92,T=34,B=30,W_=640,H=200,pw=W_-L-Rt;
+  var lo=Math.log(R[0].p10*.55), hi=Math.log(Math.max(R[2].p99,R[2].p90*1.5));
+  function X(v){return L+(Math.log(v)-lo)/(hi-lo)*pw}
+  var s='';
+  var d=Math.pow(10,Math.floor(Math.log(Math.exp(lo))/Math.LN10));
+  while(Math.log(d)<hi){
+    if(Math.log(d)>lo){ s+=line(X(d),T-14,X(d),H-B+6); s+=txt(X(d),H-B+20,rupiah(d),{anchor:'middle'}); }
+    d*=10;
+  }
+  s+=txt(L,16,'expenditure per capita / month (log scale)',{size:9.5});
+  R.forEach(function(r,i){
+    var yy=T+14+i*44;
+    s+=txt(L-10,yy+4,r.n,{anchor:'end',fill:C.ink,size:10});
+    var x1=X(r.p10),x2=X(r.p90);
+    s+=rect(x1,yy-9,x2-x1,18,{fill:C.accent,op:.22,r:2});
+    s+=rect(x1,yy-9,x2-x1,18,{stroke:C.accent,w:1,r:2});
+    s+=line(x2,yy,X(r.p99),yy,{stroke:C.dim,w:1,dash:'2 3'});
+    s+=line(X(r.p99),yy-4,X(r.p99),yy+4,{stroke:C.dim,w:1});
+    s+=line(X(r.p50),yy-11,X(r.p50),yy+11,{stroke:C.accent,w:2});
+    s+=txt(W_-Rt+8,yy+4,r.ratio.toFixed(1)+'\u00d7 spread',{fill:C.accent,size:10});
+  });
+  g('fig-tail').innerHTML=s;
+}
+
+/* ============ fig 2: three histograms side by side ============ */
+var SCHEMES=[{k:5,lab:'kuintil'},{k:10,lab:'desil'},{k:100,lab:'persentil'}];
+function drawThree(){
+  var P=population(), TR=P.TR, OB=P.OB;
+  g('v-g2').textContent=S.gini.toFixed(2);
+  g('v-n2').textContent=S.noise.toFixed(2);
+  g('v-t2').textContent='P'+S.target;
+  g('k-r2').textContent=P.R2.toFixed(2);
+  g('k-a5').textContent=(accuracy(TR,OB,5)*100).toFixed(0)+'%';
+  g('k-a10').textContent=(accuracy(TR,OB,10)*100).toFixed(0)+'%';
+  g('k-a100').textContent=(accuracy(TR,OB,100)*100).toFixed(1)+'%';
+
+  var t=S.target/100, NB=50, html='';
+  SCHEMES.forEach(function(sc){
+    var b=Math.min(sc.k-1,Math.floor(t*sc.k)), lo=b/sc.k, hi=(b+1)/sc.k;
+    var hist=new Float64Array(NB), vals=[], i;
+    for(i=0;i<N;i++) if(OB[i]>=lo&&OB[i]<hi){
+      vals.push(TR[i]*100);
+      hist[Math.min(NB-1,Math.floor(TR[i]*NB))]++;
+    }
+    vals.sort(function(a,c){return a-c});
+    var q10=quant(vals,.10), q90=quant(vals,.90);
+    var mx=0; for(i=0;i<NB;i++) if(hist[i]>mx)mx=hist[i];
+    var bars='';
+    for(i=0;i<NB;i++){
+      var mid=(i+.5)/NB, inside=(mid>=lo&&mid<hi);
+      var h=mx?Math.max(hist[i]/mx*100,hist[i]>0?2:0):0;
+      bars+='<div class="histogram-bar'+(inside?'':' out')+'" style="height:'+h.toFixed(1)+'%" '
+          +'title="true P'+Math.round(i*100/NB)+'\u2013P'+Math.round((i+1)*100/NB)+'"></div>';
+    }
+    html+='<div class="histogram-cell">'
+        +'<div class="histogram">'+bars+'</div>'
+        +'<div class="histogram-labels"><span class="histogram-label">P0</span><span class="histogram-label">P100</span></div>'
+        +'<div class="histogram-cell-label">'+sc.lab+' '+(b+1)+'</div>'
+        +'<div class="cell-claim">claims <b>'+(100/sc.k<1?'1':(100/sc.k).toFixed(0))+' pts</b><br>'
+        +'actually <i>'+(q90-q10).toFixed(0)+' pts</i><br>P'+Math.round(q10)+'\u2013P'+Math.round(q90)+'</div>'
+        +'</div>';
+  });
+  g('grid-three').innerHTML=html;
+}
+
+/* ====== static fig: what a saturating score costs you ======
+   Deliberately NOT wired to the sliders: it is a fixed illustration at the
+   default settings, so the numbers quoted in the prose can never drift.   */
+function drawCeilStatic(){
+  var GINI=0.38, NOISE=0.60, CAP_Q=0.90, COMPRESS=0.20;
+  function world(ceiling){
+    var W=makeY(GINI,1.6,true), y=W.y, ob=new Float64Array(N), i;
+    var cap=W.sigma*qnorm(CAP_Q), sig;
+    for(i=0;i<N;i++){
+      sig=(ceiling && y[i]>cap) ? cap+COMPRESS*(y[i]-cap) : y[i];
+      ob[i]=sig+NOISE*Z2[i];
+    }
+    var TR=ranks(y), OB=ranks(ob);
+    function share(f){var t=0,h=0;
+      for(var j=0;j<N;j++) if(TR[j]>=1-f){t++; if(OB[j]>=1-f)h++}
+      return h/t}
+    return [share(0.10),share(0.01),share(0.001)];
+  }
+  var A=world(false), B=world(true);
+  var rows=[{n:'true top 10%'},{n:'true top 1%'},{n:'true top 0.1%'}];
+  var L=112,Rt=58,T=44,B_=26,W_=640,H=236,pw=W_-L-Rt;
+  var s2=txt(L,15,'share of each group the score places in the right slice',{size:9.5});
+  s2+='<rect x="'+L+'" y="26" width="9" height="9" rx="2" fill="'+C.accent+'"/>';
+  s2+=txt(L+15,34,'score keeps discriminating',{size:9.5});
+  s2+='<rect x="'+(L+180)+'" y="26" width="9" height="9" rx="2" fill="'+C.danger+'"/>';
+  s2+=txt(L+195,34,'checklist saturates above p90',{size:9.5});
+  [0,25,50,75,100].forEach(function(v){
+    var x=L+v/100*pw;
+    s2+=line(x,T,x,H-B_+2);
+    s2+=txt(x,H-B_+16,v+'%',{anchor:'middle',size:9});
+  });
+  rows.forEach(function(r,i){
+    var y0=T+16+i*54;
+    s2+=txt(L-10,y0+14,r.n,{anchor:'end',fill:C.ink,size:10});
+    [[A[i],C.accent,y0],[B[i],C.danger,y0+16]].forEach(function(d){
+      s2+=rect(L,d[2],pw,13,{fill:C.border,op:.45,r:2});
+      s2+=rect(L,d[2],d[0]*pw,13,{fill:d[1],r:2});
+      s2+=txt(L+pw+8,d[2]+10,(d[0]*100).toFixed(0)+'%',{fill:d[1],size:10});
+    });
+  });
+  g('fig-ceil').innerHTML=s2;
+}
+
+/* ================= fig 3: scatter ================= */
+function drawScatter(){
+  var P=population(), TR=P.TR, OB=P.OB;
+  g('v-g3').textContent=S.gini.toFixed(2);
+  g('v-n3').textContent=S.noise.toFixed(2);
+  var i,sum=0,errs=[],far=0;
+  for(i=0;i<N;i++){
+    sum+=(TR[i]-.5)*(OB[i]-.5);
+    var e=Math.abs(TR[i]-OB[i])*100; errs.push(e); if(e>=20)far++;
+  }
+  errs.sort(function(a,b){return a-b});
+  g('k-rho').textContent=(sum/N/(1/12)).toFixed(2);
+  g('k-mae').textContent=quant(errs,.5).toFixed(0)+' pts';
+  g('k-far').textContent=(100*far/N).toFixed(0)+'%';
+
+  var L=52,Rt=18,T=22,B=42,W_=640,H=330,pw=W_-L-Rt,ph=H-T-B;
+  function X(p){return L+p/100*pw} function Y(p){return T+ph-p/100*ph}
+  var s='';
+  [0,25,50,75,100].forEach(function(v){
+    s+=line(L,Y(v),L+pw,Y(v)); s+=txt(L-8,Y(v)+3.5,'P'+v,{anchor:'end',size:9});
+    s+=txt(X(v),H-22,'P'+v,{anchor:'middle',size:9});
+  });
+  s+=line(X(0),Y(0),X(100),Y(100),{stroke:C.danger,w:1.2,dash:'4 4'});
+  var dots='';
+  for(i=0;i<1600;i++){var j=(i*23)%N;
+    dots+='<circle cx="'+X(TR[j]*100).toFixed(1)+'" cy="'+Y(OB[j]*100).toFixed(1)+'" r="1.9"/>';}
+  s+='<g fill="'+C.accent+'" opacity="0.20">'+dots+'</g>';
+  s+=txt(L+pw/2,H-6,'true percentile',{anchor:'middle',size:9.5});
+  s+=txt(14,T+ph/2,'estimated percentile',{anchor:'middle',size:9.5,rot:-90});
+  s+=txt(L,14,'perfect system = the dashed diagonal',{size:9.5});
+  g('fig-scatter').innerHTML=s;
+}
+
+/* ================= fig 5: cutoff ================= */
+function drawCut(){
+  var P=population(), TR=P.TR, OB=P.OB, c=S.cut/100;
+  g('v-cut').textContent=S.cut+'%';
+  g('v-n5').textContent=S.noise.toFixed(2);
+  var NB=50,hit=new Float64Array(NB),tot=new Float64Array(NB),i;
+  var el=0,te=0,wo=0,wi=0;
+  for(i=0;i<N;i++){
+    var b=Math.min(NB-1,Math.floor(TR[i]*NB)), e=OB[i]<c, t=TR[i]<c;
+    tot[b]++; if(e)hit[b]++;
+    if(e)el++; if(t)te++; if(t&&!e)wo++; if(e&&!t)wi++;
+  }
+  var pts=[],grey=0;
+  for(i=0;i<NB;i++){var p=tot[i]?hit[i]/tot[i]*100:0; pts.push([(i+.5)*100/NB,p]); if(p>=40&&p<=60)grey+=100/NB}
+  g('k-excl').textContent=(100*wo/te).toFixed(0)+'%';
+  g('k-incl').textContent=(100*wi/el).toFixed(0)+'%';
+  g('k-grey').textContent=grey.toFixed(0)+' pts wide';
+
+  var L=54,Rt=20,T=26,B=42,W_=640,H=300,pw=W_-L-Rt,ph=H-T-B;
+  function X(p){return L+p/100*pw} function Y(p){return T+ph-p/100*ph}
+  var s='';
+  [0,25,50,75,100].forEach(function(v){
+    s+=line(L,Y(v),L+pw,Y(v)); s+=txt(L-8,Y(v)+3.5,v+'%',{anchor:'end',size:9})});
+  [0,25,50,75,100].forEach(function(v){s+=txt(X(v),H-22,'P'+v,{anchor:'middle',size:9})});
+  s+=rect(L,Y(60),pw,Y(40)-Y(60),{fill:C.danger,op:.07});
+  s+=txt(L+6,Y(50)+3.5,'coin-flip zone',{fill:C.danger,size:9});
+  s+=path('M'+X(0)+' '+Y(100)+' L'+X(S.cut)+' '+Y(100)+' L'+X(S.cut)+' '+Y(0)+' L'+X(100)+' '+Y(0),
+          {stroke:C.muted,w:1.2,dash:'4 4'});
+  var d=pts.map(function(p,i){return (i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)}).join(' ');
+  s+=path(d+' L'+X(100)+' '+Y(0)+' L'+X(0)+' '+Y(0)+' Z',{fill:C.accent,op:.10});
+  s+=path(d,{stroke:C.accent,w:2});
+  s+=txt(L,15,'chance of qualifying, by true position',{size:9.5});
+  s+=txt(L+pw/2,H-6,'true percentile',{anchor:'middle',size:9.5});
+  g('fig-cut').innerHTML=s;
+}
+
+/* ================= wiring ================= */
+function syncAll(){
+  [].forEach.call(document.querySelectorAll('input.sync'),function(el){
+    el.value=S[el.dataset.bind];
+  });
+}
+function redrawShared(){ drawThree(); drawScatter(); drawCut(); }
+
+[].forEach.call(document.querySelectorAll('input.sync'),function(el){
+  el.addEventListener('input',function(){
+    S[el.dataset.bind]=+el.value;
+    syncAll(); schedule(redrawShared);
+  });
+});
+g('s-g1').addEventListener('input',function(){S.gini=+this.value;
+  [].forEach.call(document.querySelectorAll('input.sync[data-bind=gini]'),function(e){e.value=S.gini});
+  schedule(function(){drawTail();redrawShared()})});
+g('s-a1').addEventListener('input',function(){S.alpha=+this.value;schedule(drawTail)});
+g('s-target').addEventListener('input',function(){S.target=+this.value;schedule(drawThree)});
+g('s-cut').addEventListener('input',function(){S.cut=+this.value;schedule(drawCut)});
+(function(){
+  var box=g('t-tail');
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    [].forEach.call(box.querySelectorAll('button'),function(x){x.classList.remove('on')});
+    b.classList.add('on'); S.tail=(b.dataset.v==='1'); drawTail();
+  });
+})();
+
+var raf=null;
+function schedule(fn){ if(raf)cancelAnimationFrame(raf); raf=requestAnimationFrame(function(){raf=null;fn()}) }
+
+g('s-g1').value=S.gini; g('s-a1').value=S.alpha; g('s-target').value=S.target; g('s-cut').value=S.cut;
+syncAll();
+drawTail(); drawCeilStatic(); redrawShared();
+})();
+</script>
+</body>
+</html>
